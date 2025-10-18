@@ -1,2 +1,3 @@
 /backend/node_modules
 /grocery-list-app/node_modules
+/grocery-list-app/.env
