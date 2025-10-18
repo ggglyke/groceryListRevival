@@ -1,0 +1,255 @@
+@import "~bootstrap/scss/bootstrap.scss";
+
+.text-small {
+  font-size: 12px;
+}
+
+.asideEdit {
+  position: sticky;
+  top: 2rem;
+}
+
+.smallUnderLabel {
+  font-size: 0.75em;
+  color: #555;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.editInput {
+  font-size: 1.75rem;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid #555;
+  border-radius: 0;
+  margin-top: -6px;
+}
+
+.checked {
+  background-color: #dedede;
+  opacity: 0.7;
+  .product-title {
+    text-decoration: line-through !important;
+  }
+}
+
+.list-container {
+  background-color: #fff;
+  border-radius: 6px;
+  border-top: 8px solid $primary;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px,
+    rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+  h1 {
+    font-size: 1.75rem;
+  }
+}
+
+.list-group {
+  .list-group-item {
+    align-items: center;
+    display: flex !important;
+    .img-container {
+      height: 24px;
+      width: 24px;
+      img {
+        width: 100%;
+        display: block;
+      }
+    }
+    &.product {
+      justify-content: space-between;
+      padding-right: 0.5rem;
+      &:not(.checked) {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      .product-permanent {
+        display: inline-block;
+        height: 0;
+        width: 0;
+        border-top: 15px solid #d2d2d2;
+        border-right: 15px solid transparent;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .icon-container {
+        border: 1px solid transparent;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        opacity: 0.3;
+        padding-left: 4px;
+        padding-right: 4px;
+        &:hover {
+          cursor: pointer;
+        }
+      }
+      .check-area {
+        height: 2rem;
+        align-items: center;
+        padding-right: 1rem;
+        .tick {
+          width: 24px;
+          height: 24px;
+          border: 1px solid rgb(66, 132, 237);
+          border-radius: 50%;
+        }
+        &:hover {
+          .tick::after {
+            content: "\2713";
+            width: 28px;
+            height: 28px;
+            position: absolute;
+            color: rgb(66, 132, 237);
+            font-weight: bold;
+            margin-left: 0.35rem;
+            margin-top: -0.05rem;
+          }
+        }
+      }
+      &.checked {
+        background-color: #dedede;
+        opacity: 0.7;
+        .product-title {
+          text-decoration: line-through !important;
+        }
+        .check-area {
+          .tick {
+            color: white;
+            background-color: rgb(66, 132, 237);
+            &::after {
+              color: white;
+              content: "\2713";
+              width: 28px;
+              height: 28px;
+              position: absolute;
+              font-weight: bold;
+              margin-left: 0.35rem;
+              margin-top: -0.05rem;
+            }
+          }
+          &:hover {
+            .tick {
+              background-color: transparent;
+              &::after {
+                color: rgb(66, 132, 237);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* SEARCH */
+
+.search {
+  position: relative;
+  .dataResult {
+    margin-top: 5px;
+    width: 300px;
+    max-height: 250px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    overflow: hidden;
+    overflow-y: auto;
+    position: absolute;
+    z-index: 9;
+    background-color: #fff;
+    .dataItem {
+      width: 100%;
+      color: #232323;
+      cursor: pointer;
+      margin: 0;
+      padding: 0.25rem 0.5rem;
+      &.selected {
+        background-color: #f1f8e9;
+      }
+      &:hover {
+        background-color: #ddd;
+      }
+      p {
+        margin-bottom: 0;
+        a {
+          text-decoration: none;
+          color: inherit;
+        }
+      }
+    }
+  }
+}
+
+/* LOADER */
+
+.loader {
+  top: 0;
+  bottom: -24px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.empty-state {
+  color: rgba(0, 0, 0, 0.3);
+  h1 {
+    font-weight: 600;
+  }
+  svg {
+    fill: rgba(0, 0, 0, 0.1);
+    width: 150px;
+  }
+}
+
+.breadcrumbs {
+  background-color: white;
+  font-size: 14px;
+  text-decoration: none;
+  a {
+    color: inherit;
+  }
+}
+
+.sortItem {
+  cursor: pointer;
+}
+
+.fw-100 {
+  font-weight: 100;
+}
+.fw-200 {
+  font-weight: 200;
+}
+
+.fw-300 {
+  font-weight: 300;
+}
+
+.fw-400 {
+  font-weight: 400;
+}
+
+.fw-500 {
+  font-weight: 500;
+}
+
+.fw-600 {
+  font-weight: 600;
+}
+
+.fw-700 {
+  font-weight: 700;
+}
+
+.fw-800 {
+  font-weight: 800;
+}
+
+.fw-900 {
+  font-weight: 900;
+}

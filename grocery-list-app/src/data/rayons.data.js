@@ -1,0 +1,17 @@
+export default [
+  { title: "Fruits et légumes", id: 1, isDefault: false },
+  { title: "Droguerie", id: 2, isDefault: false },
+  { title: "Boissons", id: 3, isDefault: false },
+  { title: "Hygiène", id: 4, isDefault: false },
+  { title: "Bio/vrac", id: 5, isDefault: false },
+  { title: "Surgelés", id: 8, isDefault: false },
+  { title: "Boucherie", id: 9, isDefault: false },
+  { title: "Charcuterie", id: 10, isDefault: false },
+  { title: "Boulangerie", id: 11, isDefault: false },
+  { title: "Fromagerie", id: 12, isDefault: false },
+  { title: "Epices/condiment", id: 13, isDefault: false },
+  { title: "Produits du monde", id: 15, isDefault: false },
+  { title: "Conserves", id: 16, isDefault: false },
+  { title: "Poissonnerie", id: 17, isDefault: false },
+  { title: "Divers, autres, non-classés...", id: 999, isDefault: true },
+];
