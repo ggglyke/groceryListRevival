@@ -10,9 +10,9 @@ import ListGroup from "react-bootstrap/ListGroup";
 import ListGroupItem from "react-bootstrap/esm/ListGroupItem";
 
 import "../scss/main.scss";
-import EmptyState from "./reusable/empty-state.component";
+import EmptyState from "./ui/EmptyState";
 import TooltipComponent from "./reusable/tooltip.component";
-import Loader from "./reusable/loader.component";
+import Loader from "./ui/Loader";
 
 export default class AddAisle extends Component {
   constructor(props) {

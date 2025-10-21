@@ -5,8 +5,8 @@ import { FaBars } from "react-icons/fa";
 import "../scss/main.scss";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import "../scss/main.scss";
-import EmptyState from "./reusable/empty-state.component";
-import Loader from "./reusable/loader.component";
+import EmptyState from "./ui/EmptyState";
+import Loader from "./ui/Loader";
 
 export default class Magasin extends Component {
   constructor(props) {

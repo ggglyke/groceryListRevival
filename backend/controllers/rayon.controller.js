@@ -33,7 +33,7 @@ exports.create = async (req, res) => {
   // Create new rayon
   try {
     const { userId, title, isDefault } = req.body;
-    const objectIdUserId = mongoose.Types.ObjectId(userId);
+    const objectIdUserId = new mongoose.Types.ObjectId(userId);
     console.log("about to create :", {
       user: objectIdUserId,
       title,
@@ -85,7 +85,7 @@ exports.findAll = (req, res) => {
 
 exports.getAllUserAisles = (req, res) => {
   const userId = req.params.id;
-  const objectIdUserId = mongoose.Types.ObjectId(userId);
+  const objectIdUserId = new mongoose.Types.ObjectId(userId);
   var condition = { user: objectIdUserId };
   Rayon.find(condition)
     .then((data) => {

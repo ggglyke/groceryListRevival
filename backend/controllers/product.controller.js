@@ -37,7 +37,7 @@ exports.findAll = (req, res) => {
 
 exports.getAllUserProducts = (req, res) => {
   const userId = req.params.id;
-  const objectIdUserId = mongoose.Types.ObjectId(userId);
+  const objectIdUserId = new mongoose.Types.ObjectId(userId);
   var condition = { user: objectIdUserId };
   Product.find(condition)
     .populate("rayon", "title")

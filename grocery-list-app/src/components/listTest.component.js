@@ -15,7 +15,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import productReducer from "../reducers/productReducer";
 
 /* own components */
-import Breadcrumbs from "./reusable/breadcrumbs.component";
+import Breadcrumbs from "./ui/Breadcrumbs";
 import ListGroup from "./reusable/listGroup.component";
 import AddProductForm from "./reusable/addProductForm.component";
 

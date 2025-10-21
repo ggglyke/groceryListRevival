@@ -7,11 +7,9 @@ const Magasin = db.magasins;
 // Create and Save a new List
 exports.create = async (req, res) => {
   // Create new list
-  const { user, title, magasin } = req.body;
 
-  const objectIdUserId = mongoose.Types.ObjectId(user);
-  const objectIdMagasinId = mongoose.Types.ObjectId(magasin);
   try {
+    const { user, title, magasin } = req.body;
     const list = await List.create({
       user: objectIdUserId,
       title,
@@ -58,7 +56,8 @@ exports.getAllUserLists = (req, res) => {
     .catch((err) => {
       console.error("Error retrieving user lists:", err);
       res.status(500).json({
-        message: err.message || "Some error occurred while retrieving user lists",
+        message:
+          err.message || "Some error occurred while retrieving user lists",
       });
     });
 };

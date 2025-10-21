@@ -6,7 +6,7 @@ exports.create = async (req, res) => {
   // Create new magasin
   try {
     const { user, title, isDefault } = req.body;
-    const objectIdUserId = mongoose.Types.ObjectId(user);
+    const objectIdUserId = new mongoose.Types.ObjectId(user);
     const magasin = await Magasin.create({
       user: objectIdUserId,
       title,
@@ -44,7 +44,7 @@ exports.findOneByCondition = async (req, res, next) => {
     const bodyCondition = req.body;
     const condition = {
       ...bodyCondition,
-      user: mongoose.Types.ObjectId(bodyCondition.user),
+      user: new mongoose.Types.ObjectId(bodyCondition.user),
     };
     await Magasin.findOne(condition).then((data) => {
       res.send(data);

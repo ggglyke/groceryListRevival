@@ -10,7 +10,7 @@ import SiteNavbar from "./components/reusable/navbar.component";
 import ProductsList from "./components/products-list.component";
 import AislesList from "./components/aisles-list.component";
 import NewList from "./components/new-list.component";
-import Lists from "./components/lists.component";
+import Lists from "./components/lists/Lists";
 import List from "./components/list.component";
 import Magasins from "./components/magasins.component";
 import Magasin from "./components/magasin.component";

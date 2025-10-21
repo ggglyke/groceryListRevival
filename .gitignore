@@ -1,3 +1,5 @@
 /backend/node_modules
+/backend/back.zip
 /grocery-list-app/node_modules
 /grocery-list-app/.env
+/grocery-list-app/front.zip

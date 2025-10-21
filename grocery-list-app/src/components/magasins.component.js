@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 import ListGroup from "react-bootstrap/ListGroup";
 
 import "../scss/main.scss";
-import EmptyState from "./reusable/empty-state.component";
-import Loader from "./reusable/loader.component";
+import EmptyState from "./ui/EmptyState";
+import Loader from "./ui/Loader";
 
 export default class Magasins extends Component {
   constructor(props) {

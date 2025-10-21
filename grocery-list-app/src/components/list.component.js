@@ -7,7 +7,7 @@ import ProductDataService from "../services/product.service";
 import AisleDataService from "../services/aisle.service";
 
 import SearchBar from "./reusable/searchbar.component";
-import Loader from "./reusable/loader.component";
+import Loader from "./ui/Loader";
 
 /* react-bootstrap */
 import Dropdown from "react-bootstrap/Dropdown";
