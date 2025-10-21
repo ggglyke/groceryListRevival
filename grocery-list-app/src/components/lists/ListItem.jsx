@@ -12,7 +12,7 @@ export default function ListItem({ list }) {
       className="list-group-item list-group-item-action"
     >
       <div>
-        {list.title}
+        <span className="list-group-item-title">{list.title}</span>
         <span className="text-small d-block text-muted">
           {count}
           {count > 1 ? " produits" : " produit"}

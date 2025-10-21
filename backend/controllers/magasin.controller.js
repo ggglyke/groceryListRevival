@@ -57,14 +57,16 @@ exports.findOneByCondition = async (req, res, next) => {
 
 exports.findManyByCondition = async (req, res, next) => {
   try {
-    const condition = req.body;
+    const bodyCondition = req.body;
+    const condition = {
+      ...bodyCondition,
+      user: new mongoose.Types.ObjectId(bodyCondition.user),
+    };
     await Magasin.find(condition).then((data) => {
       res.send(data);
     });
   } catch (err) {
     console.error(err);
-    /*const errors = handleErrors(err);
-    res.json({ errors, found: false });*/
     res.json({ err, found: false });
   }
 };

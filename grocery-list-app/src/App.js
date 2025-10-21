@@ -11,7 +11,7 @@ import ProductsList from "./components/products-list.component";
 import AislesList from "./components/aisles-list.component";
 import Lists from "./components/lists/Lists";
 import List from "./components/list.component";
-import Magasins from "./components/magasins.component";
+import Magasins from "./components/magasins/Magasins";
 import Magasin from "./components/magasin.component";
 import ListTest from "./components/listTest.component";
 import Home from "./components/home.component";
@@ -54,7 +54,7 @@ export default function App() {
             path={"/lists/:id"}
             element={<ListWrapper userId={user?._id} />}
           />
-          <Route path={"/magasins"} element={<Magasins />} />
+          <Route path={"/magasins"} element={<Magasins userId={user?._id} />} />
           <Route path={"/aisles"} element={<AislesList />} />
           <Route path={"/products"} element={<ProductsList />} />
           <Route path={"/magasin/:id"} element={<MagasinWrapper />} />

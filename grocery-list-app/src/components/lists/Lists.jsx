@@ -13,8 +13,6 @@ import EmptyLists from "./EmptyLists";
 import Loader from "../ui/Loader";
 import TooltipComponent from "../reusable/tooltip.component";
 
-/* data */
-
 export default function Lists({ userId }) {
   const { lists, isLoading, error, createList } = useLists({ userId });
 
