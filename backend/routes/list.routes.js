@@ -6,9 +6,6 @@ module.exports = (app) => {
   // Create a new List
   router.post("/", lists.create);
 
-  // Retrieve all Lists
-  router.get("/", lists.findAll);
-
   //retrieve all user Lists
   router.get("/user/:id", lists.getAllUserLists);
 

@@ -6,14 +6,8 @@ module.exports = (app) => {
   // Create a new Product
   router.post("/", products.create);
 
-  // Retrieve all Products
-  router.get("/", products.findAll);
-
   //retrieve all user Products
   router.get("/user/:id", products.getAllUserProducts);
-
-  // Retrieve all published Products
-  router.get("/published", products.findAllPublished);
 
   // Retrieve a single Product with id
   router.get("/:id", products.findOne);

@@ -9,14 +9,8 @@ module.exports = (app) => {
   // Create multiple new Rayons
   router.post("/many", rayons.insertMany);
 
-  // Retrieve all Rayons
-  router.get("/", rayons.findAll);
-
   //retrieve all user Products
   router.get("/user/:id", rayons.getAllUserAisles);
-
-  // Retrieve all published Rayons
-  //router.get("/published", rayons.findAllPublished);
 
   // Retrieve a single Product with id
   router.get("/:id", rayons.findOne);

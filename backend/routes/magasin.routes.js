@@ -12,12 +12,6 @@ module.exports = (app) => {
   // Retrieve one by condition
   router.post("/findManyByCondition", magasins.findManyByCondition);
 
-  // Retrieve all magasins
-  router.get("/", magasins.findAll);
-
-  // Retrieve all published magasins
-  /*router.get("/published", magasins.findAllPublished);*/
-
   // Retrieve a single Magasin with id
   router.get("/:id", magasins.findOneById);
 

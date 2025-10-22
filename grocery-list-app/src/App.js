@@ -7,7 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "./context/AuthContext";
 
 import SiteNavbar from "./components/reusable/navbar.component";
-import ProductsList from "./components/products-list.component";
+import Products from "./components/products";
 import AislesList from "./components/aisles-list.component";
 import Lists from "./components/lists/Lists";
 import List from "./components/list.component";
@@ -58,7 +58,7 @@ export default function App() {
           <Route path={"/aisles"} element={<AislesList />} />
           <Route
             path={"/products"}
-            element={<ProductsList userId={user?._id} />}
+            element={<Products userId={user?._id} />}
           />
           <Route path={"/magasin/:id"} element={<MagasinWrapper />} />
         </Route>

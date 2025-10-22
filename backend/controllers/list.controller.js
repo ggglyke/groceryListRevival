@@ -145,7 +145,7 @@ exports.delete = async (req, res) => {
         .status(403)
         .send({ message: "Unauthorized to delete this list" });
     }
-    await List.findByIdAndRemove(id);
+    await List.findByIdAndDelete(id);
     res.send({ message: "List was deleted successfully!" });
   } catch (err) {
     res.status(500).send({

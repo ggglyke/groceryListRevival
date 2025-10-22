@@ -122,12 +122,13 @@ exports.delete = async (req, res) => {
         message: `Cannot delete Product with id=${id}. Product not found!`,
       });
     }
+
     if (product.user.toString() !== userId) {
       return res
         .status(403)
         .send({ message: "Unauthorized to delete this product" });
     }
-    await Product.findByIdAndRemove(id);
+    await Product.findByIdAndDelete(id);
     res.send({ message: "Product was deleted successfully!" });
   } catch (err) {
     res.status(500).send({

@@ -18,11 +18,11 @@ class ProductDataService {
   }
 
   delete(id, userId) {
-    return http.delete(`/products/${id}?userId=${userId}`);
+    return http.delete(`/products/${id}`, { data: { userId } });
   }
 
   deleteAll(userId) {
-    return http.delete(`/products?userId=${userId}`);
+    return http.delete(`/products`, { data: { userId } });
   }
 }
 

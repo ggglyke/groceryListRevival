@@ -164,7 +164,7 @@ exports.delete = async (req, res) => {
         .send({ message: "Unauthorized to delete this rayon" });
     }
 
-    await Rayon.findByIdAndRemove(id);
+    await Rayon.findByIdAndDelete(id);
     res.send({ message: "Rayon was deleted successfully!" });
   } catch (err) {
     res.status(500).send({
