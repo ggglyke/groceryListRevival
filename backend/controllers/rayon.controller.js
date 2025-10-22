@@ -2,33 +2,6 @@ const db = require("../models");
 const mongoose = require("mongoose");
 const Rayon = db.rayons;
 
-// Create and Save a new Rayon
-/*exports.create = (req, res) => {
-  if (!req.body.title) {
-    res.status(400).send({ message: "Content can not be empty" });
-    return;
-  }
-
-  // Create new rayon
-  const rayon = new Rayon({
-    title: req.body.title,
-    user: req.body.user,
-    published: req.body.published ? req.body.published : false,
-  });
-
-  // Save rayon in database
-  rayon
-    .save(rayon)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occured while creating the rayon",
-      });
-    });
-};*/
-
 exports.create = async (req, res) => {
   // Create new rayon
   try {
@@ -57,30 +30,24 @@ exports.create = async (req, res) => {
 exports.insertMany = async (req, res) => {
   try {
     const rayonsData = req.body;
+    const hasInvalidData = rayonsData.some((rayon) => !rayon.user);
+    if (hasInvalidData) {
+      return res.status(400).json({
+        message: "Tous les rayons doivent avoir un user ID",
+        rayonsCreated: false,
+      });
+    }
     const rayons = await Rayon.insertMany(rayonsData);
     res.status(201).json({ rayons, rayonsCreated: true });
   } catch (err) {
     console.error(err);
-    const errors = handleErrors(err);
-    res.json({ errors, rayonsCreated: false });
-  }
-};
-
-// Retrieve all Rayons from the database.
-exports.findAll = (req, res) => {
-  title = req.query.title;
-  var condition = title
-    ? { title: { $regex: new RegExp(title), $options: "i" } }
-    : {};
-  Rayon.find(condition)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occured while retrieving rayons",
-      });
+    res.json({
+      message:
+        err.message ||
+        "Erreur lors de la création des rayons du magasin par défaut ",
+      rayonsCreated: false,
     });
+  }
 };
 
 exports.getAllUserAisles = (req, res) => {
@@ -100,23 +67,35 @@ exports.getAllUserAisles = (req, res) => {
 };
 
 // Find a single Rayon with an id
-exports.findOne = (req, res) => {
+exports.findOne = async (req, res) => {
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  Rayon.findById(id)
-    .populate("rayon")
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found Rayon with id " + id });
-      else res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: "Error retrieving Rayon with id=" + id });
-    });
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const rayon = await Rayon.findById(id);
+    if (!rayon) {
+      return res
+        .status(404)
+        .send({ message: "Rayon not found with id: " + id });
+    }
+    if (rayon.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized access to this rayon" });
+    }
+
+    res.send(rayon);
+  } catch (err) {
+    res.status(500).send({ message: "Error retrieving Rayon with id=" + id });
+  }
 };
 
 // Update a Rayon by the id in the request
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
@@ -124,71 +103,95 @@ exports.update = (req, res) => {
   }
 
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  Rayon.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot update Rayon with id=${id}. Maybe Rayon was not found!`,
-        });
-      } else res.send({ message: "Rayon was updated successfully." });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error updating Rayon with id=" + id,
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const rayon = await Rayon.findById(id);
+
+    if (!rayon) {
+      return res.status(404).send({
+        message: `Cannot update Rayon with id=${id}. Rayon not found!`,
       });
+    }
+
+    if (rayon.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to update this rayon" });
+    }
+
+    const updatedRayon = await Rayon.findByIdAndUpdate(id, req.body, {
+      useFindAndModify: false,
+      new: true,
     });
+
+    res.send({
+      message: "Rayon was updated successfully.",
+      rayon: updatedRayon,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: "Error updating Rayon with id=" + id,
+    });
+  }
 };
 
 // Delete a Rayon with the specified id in the request
-exports.delete = (req, res) => {
+exports.delete = async (req, res) => {
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  Rayon.findByIdAndRemove(id)
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot delete Rayon with id=${id}. Maybe Rayon was not found!`,
-        });
-      } else {
-        res.send({
-          message: "Rayon was deleted successfully!",
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Could not delete Rayon with id=" + id,
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const rayon = await Rayon.findById(id);
+
+    if (!rayon) {
+      return res.status(404).send({
+        message: `Cannot delete Rayon with id=${id}. Rayon not found!`,
       });
+    }
+
+    if (rayon.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to delete this rayon" });
+    }
+
+    await Rayon.findByIdAndRemove(id);
+    res.send({ message: "Rayon was deleted successfully!" });
+  } catch (err) {
+    res.status(500).send({
+      message: "Could not delete Rayon with id=" + id,
     });
+  }
 };
 
 // Delete all Rayons from the database.
-exports.deleteAll = (req, res) => {
-  Rayon.deleteMany({})
-    .then((data) => {
-      res.send({
-        message: `${data.deletedCount} Rayons were deleted successfully!`,
-      });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while removing all rayons.",
-      });
+exports.deleteAll = async (req, res) => {
+  const userId = req.body.user || req.query.userId;
+  if (!userId) {
+    return res.status(400).send({
+      message: "User ID is required to delete rayons",
     });
-};
-/*
-// Find all published Rayons
-exports.findAllPublished = (req, res) => {};
-
-db.lists.updateMany(
-  { _id: ObjectId("64cce1fbde2b400041b554e4") },
-  {
-    $set: {
-      customProducts: [{ rayon: "ObjectId('656df56fc9e6fb41ec6cca8b')" }],
-    },
   }
-);
 
-*/
+  const objectIdUserId = new mongoose.Types.ObjectId(userId);
+
+  try {
+    const result = await Rayon.deleteMany({ user: objectIdUserId });
+    res.send({
+      message: `${result.deletedCount} Rayons were deleted successfully!`,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while removing all rayons.",
+    });
+  }
+};

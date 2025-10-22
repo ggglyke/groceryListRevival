@@ -7,9 +7,15 @@ const Magasin = db.magasins;
 // Create and Save a new List
 exports.create = async (req, res) => {
   // Create new list
-
   try {
     const { user, title, magasin } = req.body;
+    if (!user) {
+      return res.status(401).send({ message: "User ID required" });
+    }
+    const objectIdUserId = new mongoose.Types.ObjectId(user);
+    const objectIdMagasinId = magasin
+      ? new mongoose.Types.ObjectId(magasin)
+      : null;
     const list = await List.create({
       user: objectIdUserId,
       title,
@@ -17,27 +23,12 @@ exports.create = async (req, res) => {
     });
     res.status(201).json({ list: list._id, listCreated: true });
   } catch (err) {
+    console.error(err);
     res.json({
       message: err.message,
       created: false,
     });
   }
-};
-
-// Retrieve all Lists from the database.
-exports.findAll = (req, res) => {
-  const id = req.query._id;
-  var condition = id;
-  List.find({ condition })
-    .populate("products", "title")
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occured while retrieving lists",
-      });
-    });
 };
 
 exports.getAllUserLists = (req, res) => {
@@ -63,71 +54,102 @@ exports.getAllUserLists = (req, res) => {
 };
 
 // Find a single List with an id
-exports.findOne = (req, res) => {
+exports.findOne = async (req, res) => {
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  List.findById(id)
-    .populate({
-      path: "products",
-      populate: { path: "rayon" },
-    })
-    .populate({
-      path: "customProducts",
-      populate: { path: "rayon" },
-    })
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found List with id " + id });
-      else res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({ message: "Error retrieving List with id=" + id });
-    });
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const list = await List.findById(id)
+      .populate({
+        path: "products",
+        populate: { path: "rayon" },
+      })
+      .populate({
+        path: "customProducts",
+        populate: { path: "rayon" },
+      });
+    if (!list) {
+      return res.status(404).send({ message: "List not found with id: " + id });
+    }
+    if (list.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized access to this list" });
+    }
+    res.send(list);
+  } catch (err) {
+    res.status(500).send({ message: "Error retrieving List with id=" + id });
+  }
 };
 
 // Update a List by the id in the request
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
     });
   }
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  List.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot update List with id=${id}. Maybe List was not found!`,
-        });
-      } else res.send({ message: "List was updated successfully." });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error updating List with id=" + id,
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const list = await List.findById(id);
+    if (!list) {
+      return res.status(404).send({
+        message: `Cannot update List with id=${id}. List not found!`,
       });
+    }
+    if (list.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to update this list" });
+    }
+    const updatedList = await List.findByIdAndUpdate(id, req.body, {
+      useFindAndModify: false,
+      new: true,
     });
+    res.send({ message: "List was updated successfully.", list: updatedList });
+  } catch (err) {
+    res.status(500).send({
+      message: "Error updating List with id=" + id,
+    });
+  }
 };
 
 // Delete a List with the specified id in the request
-exports.delete = (req, res) => {
+exports.delete = async (req, res) => {
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  List.findByIdAndRemove(id)
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot delete List with id=${id}. Maybe List was not found!`,
-        });
-      } else {
-        res.send({
-          message: "List was deleted successfully!",
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Could not delete List with id=" + id,
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const list = await List.findById(id);
+    if (!list) {
+      return res.status(404).send({
+        message: `Cannot delete List with id=${id}. List not found!`,
       });
+    }
+    if (list.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to delete this list" });
+    }
+    await List.findByIdAndRemove(id);
+    res.send({ message: "List was deleted successfully!" });
+  } catch (err) {
+    res.status(500).send({
+      message: "Could not delete List with id=" + id,
     });
+  }
 };

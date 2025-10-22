@@ -22,23 +22,6 @@ exports.create = async (req, res) => {
   }
 };
 
-// Retrieve all Magasins from the database.
-exports.findAll = (req, res) => {
-  const title = req.query.title;
-  var condition = title
-    ? { title: { $regex: new RegExp(title), $options: "i" } }
-    : {};
-  Magasin.find(condition)
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occured while retrieving magasins",
-      });
-    });
-};
-
 exports.findOneByCondition = async (req, res, next) => {
   try {
     const bodyCondition = req.body;
@@ -71,60 +54,76 @@ exports.findManyByCondition = async (req, res, next) => {
   }
 };
 
-// Find a single Magasin
-/*exports.findOne = (req, res) => {
-  const id = req.params.id;
-
-  Magasin.findById(id)
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found Magasin with id " + id });
-      else res.send(data);
-    })
-    .catch((err) => {
-      res
-        .status(500)
-        .send({ message: "Error retrieving Magasin with id=" + id });
-    });
-};*/
-
 // Find a single Magasin with an id
-exports.findOneById = (req, res) => {
+exports.findOneById = async (req, res) => {
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  Magasin.findById(id)
-    .then((data) => {
-      if (!data)
-        res.status(404).send({ message: "Not found Magasin with id " + id });
-      else res.send(data);
-    })
-    .catch((err) => {
-      res
-        .status(500)
-        .send({ message: "Error retrieving Magasin with id=" + id });
-    });
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const magasin = await Magasin.findById(id);
+    if (!magasin) {
+      return res
+        .status(404)
+        .send({ message: "Magasin not found with id: " + id });
+    }
+
+    if (magasin.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized access to this magasin" });
+    }
+
+    res.send(magasin);
+  } catch (err) {
+    res.status(500).send({ message: "Error retrieving Magasin with id=" + id });
+  }
 };
 
 // Update a Magasin by the id in the request
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   if (!req.body) {
     return res.status(400).send({
       message: "Data to update can not be empty!",
     });
   }
   const id = req.params.id;
+  const userId = req.body.userId || req.query.userId;
 
-  Magasin.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `Cannot update Magasin with id=${id}. Maybe Magasin was not found!`,
-        });
-      } else res.send({ message: "Magasin was updated successfully." });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error updating Magasin with id=" + id,
+  if (!userId) {
+    return res.status(401).send({ message: "User ID required" });
+  }
+
+  try {
+    const magasin = await Magasin.findById(id);
+
+    if (!magasin) {
+      return res.status(404).send({
+        message: `Cannot update Magasin with id=${id}. Magasin not found!`,
       });
+    }
+
+    if (magasin.user.toString() !== userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to update this magasin" });
+    }
+
+    const updatedMagasin = await Magasin.findByIdAndUpdate(id, req.body, {
+      useFindAndModify: false,
+      new: true,
     });
+
+    res.send({
+      message: "Magasin was updated successfully.",
+      magasin: updatedMagasin,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: "Error updating Magasin with id=" + id,
+    });
+  }
 };

@@ -1,36 +1,28 @@
 import http from "../http-common";
 
 class ProductDataService {
-  getAll() {
-    return http.get("/products");
-  }
-
   getAllUserProducts(userId) {
     return http.get(`/products/user/${userId}`);
   }
 
-  get(id) {
-    return http.get(`/products/${id}`);
+  get(id, userId) {
+    return http.get(`/products/${id}?userId=${userId}`);
   }
 
   create(data) {
     return http.post("/products", data);
   }
 
-  update(id, data) {
-    return http.put(`/products/${id}`, data);
+  update(id, data, userId) {
+    return http.put(`/products/${id}?userId=${userId}`, data);
   }
 
-  delete(id) {
-    return http.delete(`/products/${id}`);
+  delete(id, userId) {
+    return http.delete(`/products/${id}?userId=${userId}`);
   }
 
-  deleteAll() {
-    return http.delete(`/products`);
-  }
-
-  findByTitle(title) {
-    return http.get(`/products?title=${title}`);
+  deleteAll(userId) {
+    return http.delete(`/products?userId=${userId}`);
   }
 }
 

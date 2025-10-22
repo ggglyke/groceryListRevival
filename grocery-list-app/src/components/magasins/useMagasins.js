@@ -53,7 +53,7 @@ export default function useMagasins({ userId }) {
         };
 
         const result = await MagasinDataService.create(magasinData);
-        const newMagasinId = result?.data?._id || null;
+        const newMagasinId = result?.data?.magasin || result?.data._id || null;
 
         if (newMagasinId) {
           toast.success("Magasin créé avec succès", { position: "top-right" });

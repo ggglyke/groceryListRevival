@@ -56,7 +56,10 @@ export default function App() {
           />
           <Route path={"/magasins"} element={<Magasins userId={user?._id} />} />
           <Route path={"/aisles"} element={<AislesList />} />
-          <Route path={"/products"} element={<ProductsList />} />
+          <Route
+            path={"/products"}
+            element={<ProductsList userId={user?._id} />}
+          />
           <Route path={"/magasin/:id"} element={<MagasinWrapper />} />
         </Route>
       </Routes>
