@@ -17,16 +17,16 @@ class ListDataService {
     return http.post("/lists", data);
   }
 
-  update(id, data) {
-    return http.put(`/lists/${id}`, data);
+  update(id, data, userId) {
+    return http.put(`/lists/${id}?userId=${userId}`, data);
   }
 
-  delete(id) {
-    return http.delete(`/lists/${id}`);
+  delete(id, userId) {
+    return http.delete(`/lists/${id}`, { data: { userId } });
   }
 
-  deleteAll() {
-    return http.delete(`/lists`);
+  deleteAll(userId) {
+    return http.delete(`/lists`, { data: { userId } });
   }
 }
 

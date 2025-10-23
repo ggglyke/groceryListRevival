@@ -20,16 +20,16 @@ class AisleDataService {
     return http.post("/rayons/many", data);
   }
 
-  update(id, data) {
-    return http.put(`/rayons/${id}`, data);
+  update(id, data, userId) {
+    return http.put(`/rayons/${id}?userId=${userId}`, data);
   }
 
-  delete(id) {
-    return http.delete(`/rayons/${id}`);
+  delete(id, userId) {
+    return http.delete(`/rayons/${id}`, { data: { userId } });
   }
 
-  deleteAll() {
-    return http.delete(`/rayons`);
+  deleteAll(userId) {
+    return http.delete(`/rayons`, { data: { userId } });
   }
 
   findByTitle(title) {

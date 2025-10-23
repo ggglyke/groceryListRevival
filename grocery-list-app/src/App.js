@@ -8,7 +8,7 @@ import { useAuth } from "./context/AuthContext";
 
 import SiteNavbar from "./components/reusable/navbar.component";
 import Products from "./components/products";
-import AislesList from "./components/aisles-list.component";
+import AislesList from "./components/aisles";
 import Lists from "./components/lists/Lists";
 import List from "./components/list.component";
 import Magasins from "./components/magasins/Magasins";
@@ -55,11 +55,8 @@ export default function App() {
             element={<ListWrapper userId={user?._id} />}
           />
           <Route path={"/magasins"} element={<Magasins userId={user?._id} />} />
-          <Route path={"/aisles"} element={<AislesList />} />
-          <Route
-            path={"/products"}
-            element={<Products userId={user?._id} />}
-          />
+          <Route path={"/aisles"} element={<AislesList userId={user?._id} />} />
+          <Route path={"/products"} element={<Products userId={user?._id} />} />
           <Route path={"/magasin/:id"} element={<MagasinWrapper />} />
         </Route>
       </Routes>

@@ -21,16 +21,16 @@ class MagasinDataService {
     return http.post("/magasins/findOneByCondition", data);
   }
 
-  update(id, data) {
-    return http.put(`/magasins/${id}`, data);
+  update(id, data, userId) {
+    return http.put(`/magasins/${id}?userId=${userId}`, data);
   }
 
-  delete(id) {
-    return http.delete(`/magasins/${id}`);
+  delete(id, userId) {
+    return http.delete(`/magasins/${id}`, { data: { userId } });
   }
 
-  deleteAll() {
-    return http.delete(`/magasins`);
+  deleteAll(userId) {
+    return http.delete(`/magasins`, { data: { userId } });
   }
 }
 

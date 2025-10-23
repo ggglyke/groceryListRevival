@@ -8,7 +8,7 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 /* React Bootstrap */
 import Tooltip from "react-bootstrap/Tooltip";
 
-function TooltipComponent({ text, config }) {
+function TooltipComponent({ text, config = {} }) {
   return (
     <OverlayTrigger
       placement="top"
