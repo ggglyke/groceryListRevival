@@ -9,8 +9,8 @@ class ListDataService {
     return http.get(`/lists/user/${userId}`);
   }
 
-  get(id) {
-    return http.get(`/lists/${id}`);
+  get(id, userId) {
+    return http.get(`/lists/${id}?userId=${userId}`);
   }
 
   create(data) {

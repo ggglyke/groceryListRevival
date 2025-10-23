@@ -64,13 +64,13 @@ exports.findOne = async (req, res) => {
 
   try {
     const list = await List.findById(id)
+      .populate("magasin")
       .populate({
         path: "products",
         populate: { path: "rayon" },
       })
       .populate({
-        path: "customProducts",
-        populate: { path: "rayon" },
+        path: "customProducts.rayon",
       });
     if (!list) {
       return res.status(404).send({ message: "List not found with id: " + id });

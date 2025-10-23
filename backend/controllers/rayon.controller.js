@@ -7,11 +7,6 @@ exports.create = async (req, res) => {
   try {
     const { userId, title, isDefault } = req.body;
     const objectIdUserId = new mongoose.Types.ObjectId(userId);
-    console.log("about to create :", {
-      user: objectIdUserId,
-      title,
-      isDefault,
-    });
     const magasin = await Rayon.create({
       user: objectIdUserId,
       title,

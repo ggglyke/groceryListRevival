@@ -73,7 +73,6 @@ exports.login = async (req, res, next) => {
       path: "/",
       maxAge: maxAge * 1000,
     });
-    console.log("[auth] set jwt cookie for user", user._id.toString());
     res.status(200).json({
       user: { _id: user._id, username: user.username },
       logged: true,
@@ -89,8 +88,6 @@ exports.login = async (req, res, next) => {
 };
 
 exports.verify = (req, res) => {
-  console.log("[verify] cookies header:", req.headers.cookie);
-  console.log("[verify] parsed cookies:", req.cookies);
   try {
     const token = req.cookies?.jwt;
     if (!token) return res.status(200).json({ authenticated: false });

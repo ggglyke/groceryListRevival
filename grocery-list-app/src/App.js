@@ -10,7 +10,7 @@ import SiteNavbar from "./components/reusable/navbar.component";
 import Products from "./components/products";
 import AislesList from "./components/aisles";
 import Lists from "./components/lists/Lists";
-import List from "./components/list.component";
+import List from "./components/list";
 import Magasins from "./components/magasins/Magasins";
 import Magasin from "./components/magasin";
 import ListTest from "./components/listTest.component";
@@ -26,11 +26,6 @@ export default function App() {
     verify();
   }, [verify]);
 
-  const ListWrapper = (props) => {
-    const params = useParams();
-    return <List {...{ ...props, match: { params } }} />;
-  };
-
   if (loading) return <div className="p-4">Chargement…</div>;
 
   return (
@@ -45,10 +40,7 @@ export default function App() {
 
         <Route element={<PrivateRoute authenticated={authenticated} />}>
           <Route path={"/lists"} element={<Lists userId={user?._id} />} />
-          <Route
-            path={"/lists/:id"}
-            element={<ListWrapper userId={user?._id} />}
-          />
+          <Route path={"/lists/:id"} element={<List userId={user?._id} />} />
           <Route path={"/magasins"} element={<Magasins userId={user?._id} />} />
           <Route path={"/aisles"} element={<AislesList userId={user?._id} />} />
           <Route path={"/products"} element={<Products userId={user?._id} />} />
