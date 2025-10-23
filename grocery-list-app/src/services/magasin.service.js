@@ -5,8 +5,8 @@ class MagasinDataService {
     return http.get("/magasins");
   }
 
-  get(id) {
-    return http.get(`/magasins/${id}`);
+  get(id, userId) {
+    return http.get(`/magasins/${id}?userId=${userId}`);
   }
 
   create(data) {

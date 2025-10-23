@@ -12,7 +12,7 @@ import AislesList from "./components/aisles";
 import Lists from "./components/lists/Lists";
 import List from "./components/list.component";
 import Magasins from "./components/magasins/Magasins";
-import Magasin from "./components/magasin.component";
+import Magasin from "./components/magasin";
 import ListTest from "./components/listTest.component";
 import Home from "./components/home.component";
 import PrivateRoute from "./components/privateRoute.component";
@@ -29,11 +29,6 @@ export default function App() {
   const ListWrapper = (props) => {
     const params = useParams();
     return <List {...{ ...props, match: { params } }} />;
-  };
-
-  const MagasinWrapper = (props) => {
-    const params = useParams();
-    return <Magasin {...{ ...props, match: { params } }} />;
   };
 
   if (loading) return <div className="p-4">Chargement…</div>;
@@ -57,7 +52,10 @@ export default function App() {
           <Route path={"/magasins"} element={<Magasins userId={user?._id} />} />
           <Route path={"/aisles"} element={<AislesList userId={user?._id} />} />
           <Route path={"/products"} element={<Products userId={user?._id} />} />
-          <Route path={"/magasin/:id"} element={<MagasinWrapper />} />
+          <Route
+            path={"/magasin/:id"}
+            element={<Magasin userId={user?._id} />}
+          />
         </Route>
       </Routes>
 
