@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import useList from "./useList";
+import ListHeader from "./ListHeader";
+import ProductSearchBar from "./ProductSearchBar";
+import ProductsByAisle from "./ProductsByAisle";
 import Loader from "../ui/Loader";
+import PageLayout from "../layout/PageLayout";
+import AlertModal from "../ui/AlertModal";
 
 export default function List({ userId }) {
   const { id } = useParams();
@@ -10,92 +15,117 @@ export default function List({ userId }) {
     aisles,
     dbProducts,
     magasins,
-    productsToDisplay,
     rayonList,
     isLoading,
     error,
     listDeleted,
+    toggleCheck,
+    removeProductFromList,
+    renameProduct,
+    addProductToList,
+    addCustomProductToList,
+    deleteAllCheckedProducts,
+    deleteAllProducts,
+    updateListTitle,
+    changeMagasin,
+    deleteList,
   } = useList({ listId: id, userId });
+
+  const [showDeleteCheckedModal, setShowDeleteCheckedModal] = useState(false);
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+  const [showDeleteListModal, setShowDeleteListModal] = useState(false);
 
   if (!userId) return <Loader />;
   if (listDeleted) return <Navigate to="/lists" replace={true} />;
+  if (isLoading) return <Loader />;
 
   return (
-    <>
-      {/* Breadcrumbs */}
-      <div className="breadcrumbs mb-5">
-        <div className="container">
-          <div className="row">
-            <div className="col py-2 text-muted">
-              Accueil {">"} <a href="/lists">Listes</a> {">"}{" "}
-              {list?.title || "Chargement..."}
-            </div>
-          </div>
-        </div>
-      </div>
+    <PageLayout
+      breadcrumbs={[
+        { label: "Listes", path: "/lists" },
+        { label: list?.title || "Chargement..." },
+      ]}
+      error={error}
+    >
+      <ListHeader
+        list={list}
+        magasins={magasins}
+        updateListTitle={updateListTitle}
+        changeMagasin={changeMagasin}
+        onDeleteCheckedProducts={() => setShowDeleteCheckedModal(true)}
+        onDeleteAllProducts={() => setShowDeleteAllModal(true)}
+        onDeleteList={() => setShowDeleteListModal(true)}
+      />
 
-      {/* Contenu principal */}
-      <div className="container">
-        {error && (
-          <div className="alert alert-danger" role="alert">
-            {error}
-          </div>
-        )}
+      <ProductSearchBar
+        dbProducts={dbProducts}
+        aisles={aisles}
+        list={list}
+        productsInList={list?.products?.map((p) => p._id) || []}
+        checkedProducts={list?.checkedProducts || []}
+        onAddProductToList={addProductToList}
+        onAddCustomProductToList={addCustomProductToList}
+      />
 
-        {!isLoading ? (
-          <div className="row d-flex justify-content-center">
-            <div className="col-sm-12 col-md-8 col-lg-6 list-container px-5 pt-4 pb-5">
-              <h1>{list?.title}</h1>
+      <ProductsByAisle
+        rayonList={rayonList}
+        list={list}
+        dbProducts={dbProducts}
+        onToggleCheck={toggleCheck}
+        onRenameProduct={renameProduct}
+        onRemoveProduct={removeProductFromList}
+        onAddProductToList={addProductToList}
+      />
 
-              {/* DEBUG: Affichage des données chargées */}
-              <div className="mt-4">
-                <h5>📊 Debug - Données chargées :</h5>
-                <ul>
-                  <li>
-                    Liste : {list?.title} (ID: {list?._id})
-                  </li>
-                  <li>Magasin : {list?.magasin?.title || "N/A"}</li>
-                  <li>Nombre de rayons : {aisles.length}</li>
-                  <li>Nombre de produits dans la BDD : {dbProducts.length}</li>
-                  <li>Nombre de magasins : {magasins.length}</li>
-                  <li>Produits dans la liste : {productsToDisplay.length}</li>
-                  <li>Rayons avec produits : {rayonList.length}</li>
-                </ul>
+      {/* Alert Modals */}
+      <AlertModal
+        show={showDeleteCheckedModal}
+        title="Un peu de ménage ?"
+        message={`Voulez-vous vraiment supprimer tous les produits déjà cochés de la liste (${
+          list?.checkedProducts?.length || 0
+        } ${list?.checkedProducts?.length > 1 ? "produits" : "produit"}) ?`}
+        confirmButtonText="Oui, supprimer les produits cochés"
+        variant="primary"
+        onClose={() => setShowDeleteCheckedModal(false)}
+        onConfirm={() => {
+          deleteAllCheckedProducts();
+          setShowDeleteCheckedModal(false);
+        }}
+      />
 
-                {/* Afficher les produits groupés par rayon */}
-                {rayonList.length > 0 && (
-                  <div className="mt-4">
-                    <h5>🛒 Produits par rayon :</h5>
-                    {rayonList.map((rayon) => (
-                      <div key={rayon._id} className="mb-3">
-                        <h6 className="fw-bold">{rayon.title}</h6>
-                        <ul>
-                          {rayon.products.map((item, idx) => (
-                            <li key={idx}>
-                              {item.title || "Produit sans nom"}
-                              {item.customName && ` (${item.customName})`}-
-                              Quantité: {item.quantity || 1}
-                              {item.checked && " ✓"}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
+      <AlertModal
+        show={showDeleteAllModal}
+        title="Mer il é fou ! 😱"
+        message={
+          <>
+            Voulez-vous vraiment supprimer tous les produits de la liste ?
+            <br />
+            <br />
+            Nombre de produit(s) :{" "}
+            {(list?.products?.length || 0) + (list?.customProducts?.length || 0)}
+          </>
+        }
+        confirmButtonText="Oui, vider la liste"
+        variant="danger"
+        onClose={() => setShowDeleteAllModal(false)}
+        onConfirm={() => {
+          deleteAllProducts();
+          setShowDeleteAllModal(false);
+        }}
+      />
 
-                {productsToDisplay.length === 0 && (
-                  <p className="text-muted mt-3">
-                    Aucun produit dans cette liste
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <Loader />
-        )}
-      </div>
-    </>
+      <AlertModal
+        show={showDeleteListModal}
+        title="Mer il é fou ! 😱"
+        message="Voulez-vous vraiment supprimer la liste ?"
+        confirmButtonText="Oui, supprimer la liste"
+        variant="danger"
+        onClose={() => setShowDeleteListModal(false)}
+        onConfirm={() => {
+          deleteList();
+          setShowDeleteListModal(false);
+        }}
+      />
+    </PageLayout>
   );
 }

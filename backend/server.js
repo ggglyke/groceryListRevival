@@ -3,8 +3,24 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
 
 const app = express();
+
+// Security headers avec Helmet
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"], // Pour les styles inline en dev
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Éviter les conflits avec CORS
+  })
+);
 
 const allowlist = new Set([
   "http://localhost:3000",
@@ -13,53 +29,56 @@ const allowlist = new Set([
 ]);
 
 const corsOptions = {
-  origin(origin, cb) {
-    // autorise aussi Postman/curl (origin null)
-    if (!origin || allowlist.has(origin)) return cb(null, true);
-    return cb(new Error("Not allowed by CORS"));
-  },
+  origin: [
+    "http://localhost:3000",
+    "https://www.guillaumejarry.com",
+    "https://guillaumejarry.com",
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  // ⬇️ ajoute X-XSRF-TOKEN (Axios peut l'envoyer) + X-Requested-With
+  // ⬇️ ajoute X-XSRF-TOKEN (Axios peut l'envoyer) + X-Requested-With + x-csrf-token
   allowedHeaders: [
     "Content-Type",
     "Authorization",
     "X-Requested-With",
     "X-XSRF-TOKEN",
+    "x-csrf-token",
   ],
   optionsSuccessStatus: 200, // évite les 204 problématiques
 };
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-app.use((req, res, next) => {
-  // aide caches inverses/CDN et s'assure que l'origine est bien variée
-  res.setHeader("Vary", "Origin");
-  next();
-});
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && allowlist.has(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET,POST,PUT,PATCH,DELETE,OPTIONS"
-    );
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Content-Type,Authorization,X-Requested-With,X-XSRF-TOKEN"
-    );
-  }
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
 
 app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting général
+const { generalLimiter } = require("./middlewares/rateLimiter.middleware");
+app.use("/api/", generalLimiter);
+
+// CSRF Protection - Désactivé en développement pour simplifier
+if (process.env.NODE_ENV === "production") {
+  const { doubleCsrfProtection } = require("./middlewares/csrf.middleware");
+  app.use(doubleCsrfProtection);
+
+  // Route to get CSRF token (production uniquement)
+  app.get("/api/csrf-token", (req, res) => {
+    const { generateToken } = require("./middlewares/csrf.middleware");
+    const token = generateToken(req, res);
+    res.json({ csrfToken: token });
+  });
+} else {
+  console.log("[DEV] CSRF protection is disabled in development mode");
+
+  // Route dummy pour le développement
+  app.get("/api/csrf-token", (_req, res) => {
+    res.json({ csrfToken: "dev-mode-no-csrf" });
+  });
+}
 
 // simple route
 app.get("/", (req, res) => {

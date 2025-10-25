@@ -1,8 +1,10 @@
 import http from "../http-common";
 
 class AisleDataService {
-  getAllUserAisles(userId) {
-    return http.get(`/rayons/user/${userId}`);
+  getAllUserAisles() {
+    // userId extracted from JWT token by backend middleware
+    // The :id parameter is ignored by backend, using req.userId instead
+    return http.get(`/rayons/user/current`);
   }
   getAll() {
     return http.get("/rayons");
@@ -20,16 +22,19 @@ class AisleDataService {
     return http.post("/rayons/many", data);
   }
 
-  update(id, data, userId) {
-    return http.put(`/rayons/${id}?userId=${userId}`, data);
+  update(id, data) {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.put(`/rayons/${id}`, data);
   }
 
-  delete(id, userId) {
-    return http.delete(`/rayons/${id}`, { data: { userId } });
+  delete(id) {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.delete(`/rayons/${id}`);
   }
 
-  deleteAll(userId) {
-    return http.delete(`/rayons`, { data: { userId } });
+  deleteAll() {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.delete(`/rayons`);
   }
 
   findByTitle(title) {

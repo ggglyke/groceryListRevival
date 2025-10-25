@@ -5,28 +5,34 @@ class ListDataService {
     return http.get("/lists/");
   }
 
-  getAllUserLists(userId) {
-    return http.get(`/lists/user/${userId}`);
+  getAllUserLists() {
+    // userId extracted from JWT token by backend middleware
+    // The :id parameter is ignored by backend, using req.userId instead
+    return http.get(`/lists/user/current`);
   }
 
-  get(id, userId) {
-    return http.get(`/lists/${id}?userId=${userId}`);
+  get(id) {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.get(`/lists/${id}`);
   }
 
   create(data) {
     return http.post("/lists", data);
   }
 
-  update(id, data, userId) {
-    return http.put(`/lists/${id}?userId=${userId}`, data);
+  update(id, data) {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.put(`/lists/${id}`, data);
   }
 
-  delete(id, userId) {
-    return http.delete(`/lists/${id}`, { data: { userId } });
+  delete(id) {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.delete(`/lists/${id}`);
   }
 
-  deleteAll(userId) {
-    return http.delete(`/lists`, { data: { userId } });
+  deleteAll() {
+    // userId no longer needed - handled by requireAuth middleware
+    return http.delete(`/lists`);
   }
 }
 

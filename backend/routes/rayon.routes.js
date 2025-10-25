@@ -1,7 +1,12 @@
+const { requireAuth } = require("../middlewares/auth.middleware.js");
+
 module.exports = (app) => {
   const rayons = require("../controllers/rayon.controller.js");
 
   var router = require("express").Router();
+
+  // Apply authentication middleware to all routes
+  router.use(requireAuth);
 
   // Create a new Rayon
   router.post("/", rayons.create);
@@ -9,19 +14,19 @@ module.exports = (app) => {
   // Create multiple new Rayons
   router.post("/many", rayons.insertMany);
 
-  //retrieve all user Products
+  //retrieve all user Aisles
   router.get("/user/:id", rayons.getAllUserAisles);
 
-  // Retrieve a single Product with id
+  // Retrieve a single Rayon with id
   router.get("/:id", rayons.findOne);
 
-  // Update a Product with id
+  // Update a Rayon with id
   router.put("/:id", rayons.update);
 
-  // Delete a Product with id
+  // Delete a Rayon with id
   router.delete("/:id", rayons.delete);
 
-  // Create a new Product
+  // Delete all Rayons
   router.delete("/", rayons.deleteAll);
 
   app.use("/api/rayons", router);

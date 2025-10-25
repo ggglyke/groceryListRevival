@@ -14,13 +14,11 @@ export default function useLists({ userId }) {
   const [error, setError] = useState(null);
 
   const fetchLists = useCallback(async () => {
-    if (!userId) return;
-
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await ListDataService.getAllUserLists(userId);
+      const response = await ListDataService.getAllUserLists();
       const lists = Array.isArray(response.data) ? response.data : [];
 
       const ordered = [...lists].sort((a, b) => {
@@ -38,28 +36,22 @@ export default function useLists({ userId }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   const createList = useCallback(
     async (e) => {
       e?.preventDefault();
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
       try {
         setIsLoading(true);
 
         const date = new Date().toLocaleString("fr-FR");
         const listData = {
-          user: userId,
           title: `Liste du ${date}`,
         };
 
         try {
           const magasinResponse = await MagasinDataService.findOneByCondition({
             default: true,
-            user: userId,
           });
           if (magasinResponse?.data?._id) {
             listData.magasin = magasinResponse.data._id;
@@ -86,7 +78,7 @@ export default function useLists({ userId }) {
         setIsLoading(false);
       }
     },
-    [userId, navigate]
+    [navigate]
   );
 
   useEffect(() => {

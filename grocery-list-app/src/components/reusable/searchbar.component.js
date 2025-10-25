@@ -73,18 +73,23 @@ export default class SearchBar extends Component {
       });
     }
 
-    // create Array of ids of products already in list : ["651vd64", "54fezfe"...]
-    let productsAlreadyInList = newFilter
+    // create Array of ids of products already in list AND not checked
+    const checkedProducts = this.props.checkedProducts || [];
+    let productsInListNotChecked = newFilter
       .filter((productInFilter) =>
-        this.props.productsInList.includes(productInFilter._id)
+        this.props.productsInList.includes(productInFilter._id) &&
+        !checkedProducts.includes(productInFilter._id)
       )
       .map((a) => a._id);
 
-    newFilter.map((a) => {
-      productsAlreadyInList.includes(a._id)
-        ? (a.selected = true)
-        : (a.selected = false);
+    newFilter.forEach((a) => {
+      if (productsInListNotChecked.includes(a._id)) {
+        a.selected = true;
+      } else {
+        a.selected = false;
+      }
     });
+
     this.setState({
       filteredData: newFilter,
     });
@@ -130,9 +135,16 @@ export default class SearchBar extends Component {
                   <p>
                     {item.title}
                     {item.selected && (
-                      <Badge pill bg="success" className="ms-2 text-small">
-                        ✓
-                      </Badge>
+                      <span
+                        className="ms-2"
+                        style={{
+                          display: "inline-block",
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor: "#28a745",
+                        }}
+                      ></span>
                     )}
                   </p>
                   {item.rayon.title && (

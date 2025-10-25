@@ -11,12 +11,10 @@ export default function useAisles({ userId }) {
 
   // Fetch aisles
   const fetchAisles = useCallback(async () => {
-    if (!userId) return;
-
     try {
       setIsLoading(true);
       setError(null);
-      const response = await AisleDataService.getAllUserAisles(userId);
+      const response = await AisleDataService.getAllUserAisles();
       const aisles = Array.isArray(response.data) ? response.data : [];
       setAisles(aisles);
     } catch (e) {
@@ -28,19 +26,13 @@ export default function useAisles({ userId }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   // Create aisle
   const createAisle = useCallback(
     async (aisleData) => {
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
-
       try {
         const data = {
-          userId: userId,
           title: aisleData.title,
           isDefault: false,
         };
@@ -62,24 +54,18 @@ export default function useAisles({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchAisles]
+    [fetchAisles]
   );
 
   // Update aisle
   const updateAisle = useCallback(
     async (aisleId, aisleData) => {
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
-
       try {
         const data = {
           title: aisleData.title,
-          user: userId,
         };
 
-        await AisleDataService.update(aisleId, data, userId);
+        await AisleDataService.update(aisleId, data);
         toast.success("Rayon mis à jour !", { position: "top-right" });
         setCurrentAisle(null);
         setEditAisleTitle("");
@@ -93,19 +79,14 @@ export default function useAisles({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchAisles]
+    [fetchAisles]
   );
 
   // Delete aisle
   const deleteAisle = useCallback(
     async (aisleId) => {
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
-
       try {
-        await AisleDataService.delete(aisleId, userId);
+        await AisleDataService.delete(aisleId);
         toast.success("Rayon supprimé", { position: "top-right" });
         await fetchAisles();
         return { success: true };
@@ -117,18 +98,13 @@ export default function useAisles({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchAisles]
+    [fetchAisles]
   );
 
   // Delete all aisles
   const deleteAllAisles = useCallback(async () => {
-    if (!userId) {
-      toast.error("Vous devez être connecté", { position: "top-right" });
-      return;
-    }
-
     try {
-      await AisleDataService.deleteAll(userId);
+      await AisleDataService.deleteAll();
       toast.success("Rayons supprimés", { position: "top-right" });
       await fetchAisles();
       return { success: true };
@@ -139,7 +115,7 @@ export default function useAisles({ userId }) {
       });
       return { success: false };
     }
-  }, [userId, fetchAisles]);
+  }, [fetchAisles]);
 
   useEffect(() => {
     fetchAisles();

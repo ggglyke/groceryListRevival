@@ -1,0 +1,33 @@
+.product-form {
+  &__aisle-field {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+
+    &--visible {
+      max-height: 200px; // Suffisant pour contenir le label + select
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Bouton submit responsive
+  &__submit-wrapper {
+    display: flex;
+    justify-content: center;
+
+    input[type="submit"] {
+      // Mobile: pleine largeur
+      @media (max-width: 767px) {
+        width: 100%;
+      }
+
+      // Desktop: 50% centré
+      @media (min-width: 768px) {
+        width: 50%;
+      }
+    }
+  }
+}

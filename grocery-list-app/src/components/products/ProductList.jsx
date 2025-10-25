@@ -6,7 +6,11 @@ import ProductItem from "./ProductItem";
 export default function ProductList({
   products,
   deleteProduct,
+  currentProduct,
+  updateProduct,
+  aisles,
   onEdit,
+  onCancelEdit,
   filterProducts,
   sortProducts,
   sortBy,
@@ -97,7 +101,11 @@ export default function ProductList({
             key={product._id}
             product={product}
             deleteProduct={deleteProduct}
+            currentProduct={currentProduct}
+            updateProduct={updateProduct}
+            aisles={aisles}
             onEdit={onEdit}
+            onCancelEdit={onCancelEdit}
           />
         ))}
       </ListGroup>

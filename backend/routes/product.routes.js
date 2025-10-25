@@ -1,7 +1,12 @@
+const { requireAuth } = require("../middlewares/auth.middleware.js");
+
 module.exports = (app) => {
   const products = require("../controllers/product.controller.js");
 
   var router = require("express").Router();
+
+  // Apply authentication middleware to all routes
+  router.use(requireAuth);
 
   // Create a new Product
   router.post("/", products.create);
@@ -18,7 +23,7 @@ module.exports = (app) => {
   // Delete a Product with id
   router.delete("/:id", products.delete);
 
-  // Create a new Product
+  // Delete all Products
   router.delete("/", products.deleteAll);
 
   app.use("/api/products", router);

@@ -17,13 +17,11 @@ export default function useProducts({ userId }) {
   const [sortBy, setSortBy] = useState("timesAdded_descend");
 
   const fetchProducts = useCallback(async () => {
-    if (!userId) return;
-
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await ProductDataService.getAllUserProducts(userId);
+      const response = await ProductDataService.getAllUserProducts();
       let products = Array.isArray(response.data) ? response.data : [];
 
       // Add times_added = 0 if missing
@@ -46,19 +44,18 @@ export default function useProducts({ userId }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   // fetch aisles
   const fetchAisles = useCallback(async () => {
-    if (!userId) return;
     try {
-      const response = await AisleDataService.getAllUserAisles(userId);
+      const response = await AisleDataService.getAllUserAisles();
       const aisles = Array.isArray(response.data) ? response.data : [];
       setAisles(aisles);
     } catch (e) {
       console.error("retrieveAisles error", e);
     }
-  }, [userId]);
+  }, []);
 
   // filter products
   const filterProducts = useCallback(
@@ -119,14 +116,8 @@ export default function useProducts({ userId }) {
   // Create product
   const createProduct = useCallback(
     async (productData) => {
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
-
       try {
         const data = {
-          user: userId,
           title: productData.title,
           rayon: productData.aisleId,
           times_added: 0,
@@ -152,7 +143,7 @@ export default function useProducts({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchProducts]
+    [fetchProducts]
   );
 
   // update product
@@ -164,7 +155,7 @@ export default function useProducts({ userId }) {
           rayon: productData.aisleId,
         };
 
-        await ProductDataService.update(productId, data, userId);
+        await ProductDataService.update(productId, data);
         toast.success("Produit mis à jour", { position: "top-right" });
         setCurrentProduct(null);
         await fetchProducts();
@@ -177,14 +168,14 @@ export default function useProducts({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchProducts]
+    [fetchProducts]
   );
 
   //delete product
   const deleteProduct = useCallback(
     async (productId) => {
       try {
-        await ProductDataService.delete(productId, userId);
+        await ProductDataService.delete(productId);
         toast.success("Produit supprimé", { position: "top-right" });
         await fetchProducts();
         return { success: true };
@@ -196,13 +187,13 @@ export default function useProducts({ userId }) {
         return { success: false };
       }
     },
-    [userId, fetchProducts]
+    [fetchProducts]
   );
 
   //delete all products
   const deleteAllProducts = useCallback(async () => {
     try {
-      await ProductDataService.deleteAll(userId);
+      await ProductDataService.deleteAll();
       toast.success("Produits supprimés", { position: "top-right" });
       await fetchProducts();
       return { success: true };
@@ -213,7 +204,7 @@ export default function useProducts({ userId }) {
       });
       return { success: false };
     }
-  }, [userId, fetchProducts]);
+  }, [fetchProducts]);
 
   useEffect(() => {
     fetchProducts();

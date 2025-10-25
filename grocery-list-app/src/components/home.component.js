@@ -2,7 +2,6 @@
 import React from "react";
 
 /* libraries */
-import { Link } from "react-router-dom";
 
 /* react-bootstrap */
 

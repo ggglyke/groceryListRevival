@@ -1,0 +1,19 @@
+.aisle-form {
+  // Bouton submit responsive
+  &__submit-wrapper {
+    display: flex;
+    justify-content: center;
+
+    input[type="submit"] {
+      // Mobile: pleine largeur
+      @media (max-width: 767px) {
+        width: 100%;
+      }
+
+      // Desktop: 50% centré
+      @media (min-width: 768px) {
+        width: 50%;
+      }
+    }
+  }
+}

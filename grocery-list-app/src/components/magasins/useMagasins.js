@@ -13,15 +13,11 @@ export default function useMagasins({ userId }) {
   const [error, setError] = useState(null);
 
   const fetchMagasins = useCallback(async () => {
-    if (!userId) return;
-
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await MagasinDataService.findManyByCondition({
-        user: userId,
-      });
+      const response = await MagasinDataService.findManyByCondition({});
       const magasins = Array.isArray(response.data) ? response.data : [];
 
       setMagasins(magasins);
@@ -34,20 +30,15 @@ export default function useMagasins({ userId }) {
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   const createMagasin = useCallback(
     async (e) => {
       e?.preventDefault();
-      if (!userId) {
-        toast.error("Vous devez être connecté", { position: "top-right" });
-        return;
-      }
       try {
         setIsLoading(true);
 
         const magasinData = {
-          user: userId,
           title: `Nouveau magasin`,
           rayonsOrder: [],
         };
@@ -70,7 +61,43 @@ export default function useMagasins({ userId }) {
         setIsLoading(false);
       }
     },
-    [userId, navigate]
+    [navigate]
+  );
+
+  const updateMagasin = useCallback(
+    async (magasinId, updates) => {
+      try {
+        await MagasinDataService.update(magasinId, updates);
+        toast.success("Magasin mis à jour", { position: "top-right" });
+        await fetchMagasins();
+        return { success: true };
+      } catch (e) {
+        console.error("updateMagasin error:", e);
+        toast.error("Erreur lors de la mise à jour du magasin", {
+          position: "top-right",
+        });
+        return { success: false };
+      }
+    },
+    [fetchMagasins]
+  );
+
+  const deleteMagasin = useCallback(
+    async (magasinId) => {
+      try {
+        await MagasinDataService.delete(magasinId);
+        toast.success("Magasin supprimé", { position: "top-right" });
+        await fetchMagasins();
+        return { success: true };
+      } catch (e) {
+        console.error("deleteMagasin error:", e);
+        toast.error("Erreur lors de la suppression du magasin", {
+          position: "top-right",
+        });
+        return { success: false };
+      }
+    },
+    [fetchMagasins]
   );
 
   useEffect(() => {
@@ -82,6 +109,8 @@ export default function useMagasins({ userId }) {
     isLoading,
     error,
     createMagasin,
+    updateMagasin,
+    deleteMagasin,
     refetchMagasins: fetchMagasins,
   };
 }

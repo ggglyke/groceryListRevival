@@ -1,7 +1,12 @@
+const { requireAuth } = require("../middlewares/auth.middleware.js");
+
 module.exports = (app) => {
   const magasins = require("../controllers/magasin.controller.js");
 
   var router = require("express").Router();
+
+  // Apply authentication middleware to all routes
+  router.use(requireAuth);
 
   // Create a new Magasin
   router.post("/", magasins.create);
@@ -19,9 +24,9 @@ module.exports = (app) => {
   router.put("/:id", magasins.update);
 
   // Delete a Magasin with id
-  /*router.delete("/:id", magasins.delete);*/
+  router.delete("/:id", magasins.delete);
 
-  // Create a new Magasin
+  // Delete all Magasins (keep commented for safety)
   /*router.delete("/", magasins.deleteAll);*/
 
   app.use("/api/magasins", router);

@@ -27,6 +27,11 @@ module.exports = (mongoose) => {
             rayon: { type: mongoose.Schema.Types.ObjectId, ref: "rayon" },
           },
         ],
+        productCustomNames: {
+          type: Map,
+          of: String,
+          default: {},
+        },
         magasin: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "magasin",

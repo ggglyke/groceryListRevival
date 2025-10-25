@@ -6,6 +6,7 @@ if (!process.env.JWT_SECRET) {
 
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
+const { validatePassword } = require("../utils/passwordValidator");
 
 const maxAge = 3 * 24 * 60 * 60;
 
@@ -44,12 +45,23 @@ const handleErrors = (err) => {
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({
+        errors: { password: passwordValidation.errors.join(", ") },
+        created: false,
+      });
+    }
+
     const user = await User.create({ username, email, password });
-    res.status(201).json({ user: user._id, created: true });
+    // Return format expected by frontend
+    return res.status(201).json({ user: user._id, created: true });
   } catch (err) {
-    console.error(err);
+    // Use handleErrors for specific auth errors
     const errors = handleErrors(err);
-    res.json({ errors, created: false });
+    return res.status(400).json({ errors, created: false });
   }
 };
 
@@ -69,16 +81,17 @@ exports.login = async (req, res, next) => {
     res.cookie("jwt", token, {
       httpOnly: true,
       sameSite: "lax",
-      secure: false,
+      secure: process.env.COOKIE_SECURE === "true", // true en production avec HTTPS
       path: "/",
       maxAge: maxAge * 1000,
     });
-    res.status(200).json({
+    // Return format expected by frontend
+    return res.status(200).json({
       user: { _id: user._id, username: user.username },
       logged: true,
     });
   } catch (err) {
-    console.error("login error", err);
+    // Use handleErrors for specific auth errors
     const errors = handleErrors(err);
     return res.status(401).json({
       errors,

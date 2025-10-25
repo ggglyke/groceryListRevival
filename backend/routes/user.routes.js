@@ -1,14 +1,23 @@
 const { checkUser } = require("../middlewares/auth.middleware.js");
+const {
+  loginLimiter,
+  registerLimiter,
+} = require("../middlewares/rateLimiter.middleware.js");
+const validate = require("../middlewares/validate.middleware.js");
+const {
+  registerSchema,
+  loginSchema,
+} = require("../validators/user.validator.js");
 
 module.exports = (app) => {
   const users = require("../controllers/user.controller.js");
   var router = require("express").Router();
 
-  // Create a new User
-  router.post("/register", users.register);
+  // Create a new User (avec rate limiting + validation)
+  router.post("/register", registerLimiter, validate(registerSchema), users.register);
 
-  // Login User
-  router.post("/login", users.login);
+  // Login User (avec rate limiting strict anti-brute force + validation)
+  router.post("/login", loginLimiter, validate(loginSchema), users.login);
 
   // Logout User
   router.post("/logout", users.logout);

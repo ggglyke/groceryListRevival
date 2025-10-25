@@ -1,7 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add .)"
+      "Bash(git add .)",
+      "Bash(find backend/controllers -name \"*.js\" -exec wc -l {} +)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 28584 -Force\")",
+      "Bash(timeout 5 node:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 31188 -Force\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 30912 -Force\")",
+      "Bash(timeout:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 12156 -Force\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 45248 -Force\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 44668 -Force\")",
+      "Bash(npm run build:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 41212 -Force\")",
+      "Bash(powershell.exe -Command \"Stop-Process -Id 40764 -Force\")",
+      "Bash(taskkill:*)",
+      "Bash(powershell.exe -Command \"Get-Process node | Stop-Process -Force\")"
     ],
     "deny": [],
     "ask": []

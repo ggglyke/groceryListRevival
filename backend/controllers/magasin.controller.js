@@ -5,19 +5,19 @@ const Magasin = db.magasins;
 exports.create = async (req, res) => {
   // Create new magasin
   try {
-    const { user, title, isDefault } = req.body;
-    const objectIdUserId = new mongoose.Types.ObjectId(user);
+    const { title, isDefault } = req.body;
+    // Use req.userId from requireAuth middleware
+    const objectIdUserId = new mongoose.Types.ObjectId(req.userId);
     const magasin = await Magasin.create({
       user: objectIdUserId,
       title,
       default: isDefault,
     });
-    res.status(200).json({ magasin: magasin._id, created: true });
+    return res.status(200).json({ magasin: magasin._id, created: true });
   } catch (err) {
     console.error(err);
-    res.json({
-      message: "Erreur lors de la création du magasin",
-      created: false,
+    return res.status(500).send({
+      message: err.message || "Some error occurred while creating the Magasin.",
     });
   }
 };
@@ -25,61 +25,65 @@ exports.create = async (req, res) => {
 exports.findOneByCondition = async (req, res, next) => {
   try {
     const bodyCondition = req.body;
+    // Use req.userId from requireAuth middleware
     const condition = {
       ...bodyCondition,
-      user: new mongoose.Types.ObjectId(bodyCondition.user),
+      user: new mongoose.Types.ObjectId(req.userId),
     };
-    await Magasin.findOne(condition).then((data) => {
-      res.send(data);
-    });
+    const magasin = await Magasin.findOne(condition);
+    if (!magasin) {
+      return res.status(404).send({ message: "Magasin not found" });
+    }
+    return res.send(magasin);
   } catch (err) {
     console.error(err);
-    res.json({ err, magasinFound: false });
+    return res.status(500).send({
+      message: err.message || "Some error occurred while retrieving magasin.",
+    });
   }
 };
 
 exports.findManyByCondition = async (req, res, next) => {
   try {
     const bodyCondition = req.body;
+    // Use req.userId from requireAuth middleware
     const condition = {
       ...bodyCondition,
-      user: new mongoose.Types.ObjectId(bodyCondition.user),
+      user: new mongoose.Types.ObjectId(req.userId),
     };
-    await Magasin.find(condition).then((data) => {
-      res.send(data);
-    });
+    const magasins = await Magasin.find(condition);
+    return res.send(magasins);
   } catch (err) {
     console.error(err);
-    res.json({ err, found: false });
+    return res.status(500).send({
+      message: err.message || "Some error occurred while retrieving magasins.",
+    });
   }
 };
 
 // Find a single Magasin with an id
 exports.findOneById = async (req, res) => {
   const id = req.params.id;
-  const userId = req.body.userId || req.query.userId;
-
-  if (!userId) {
-    return res.status(401).send({ message: "User ID required" });
-  }
 
   try {
     const magasin = await Magasin.findById(id);
     if (!magasin) {
-      return res
-        .status(404)
-        .send({ message: "Magasin not found with id: " + id });
+      return res.status(404).send({ message: "Magasin not found with id: " + id });
     }
 
-    if (magasin.user.toString() !== userId) {
+    // Verify ownership using req.userId from requireAuth middleware
+    if (magasin.user.toString() !== req.userId) {
       return res
         .status(403)
         .send({ message: "Unauthorized access to this magasin" });
     }
 
-    res.send(magasin);
+    return res.send(magasin);
   } catch (err) {
-    res.status(500).send({ message: "Error retrieving Magasin with id=" + id });
+    console.error(err);
+    return res.status(500).send({
+      message: "Error retrieving Magasin with id=" + id,
+    });
   }
 };
 
@@ -91,22 +95,16 @@ exports.update = async (req, res) => {
     });
   }
   const id = req.params.id;
-  const userId = req.body.userId || req.query.userId;
-
-  if (!userId) {
-    return res.status(401).send({ message: "User ID required" });
-  }
 
   try {
     const magasin = await Magasin.findById(id);
 
     if (!magasin) {
-      return res.status(404).send({
-        message: `Cannot update Magasin with id=${id}. Magasin not found!`,
-      });
+      return res.status(404).send({ message: "Magasin not found with id: " + id });
     }
 
-    if (magasin.user.toString() !== userId) {
+    // Verify ownership using req.userId from requireAuth middleware
+    if (magasin.user.toString() !== req.userId) {
       return res
         .status(403)
         .send({ message: "Unauthorized to update this magasin" });
@@ -117,13 +115,39 @@ exports.update = async (req, res) => {
       new: true,
     });
 
-    res.send({
-      message: "Magasin was updated successfully.",
-      magasin: updatedMagasin,
-    });
+    return res.send(updatedMagasin);
   } catch (err) {
-    res.status(500).send({
+    console.error(err);
+    return res.status(500).send({
       message: "Error updating Magasin with id=" + id,
+    });
+  }
+};
+
+// Delete a Magasin with the specified id in the request
+exports.delete = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const magasin = await Magasin.findById(id);
+
+    if (!magasin) {
+      return res.status(404).send({ message: "Magasin not found with id: " + id });
+    }
+
+    // Verify ownership using req.userId from requireAuth middleware
+    if (magasin.user.toString() !== req.userId) {
+      return res
+        .status(403)
+        .send({ message: "Unauthorized to delete this magasin" });
+    }
+
+    await Magasin.findByIdAndDelete(id);
+    return res.send({ message: "Magasin was deleted successfully!" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({
+      message: "Could not delete Magasin with id=" + id,
     });
   }
 };

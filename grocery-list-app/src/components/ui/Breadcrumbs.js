@@ -15,7 +15,7 @@ import "../../scss/main.scss";
 
 const Breadcrumbs = ({ breadcrumbs }) => {
   return (
-    <div className="breadcrumbs mb-5">
+    <div className="breadcrumbs">
       <div className="container">
         <div className="row">
           <div className="col py-2 text-muted">
