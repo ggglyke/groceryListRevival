@@ -3,7 +3,7 @@ const rateLimit = require("express-rate-limit");
 // Limiter général pour toutes les requêtes
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limite à 100 requêtes par fenêtre par IP
+  max: 2000, // Limite à 2000 requêtes par fenêtre par IP (usage normal intensif)
   message: "Trop de requêtes depuis cette IP, veuillez réessayer dans 15 minutes",
   standardHeaders: true, // Retourne les infos de rate limit dans les headers `RateLimit-*`
   legacyHeaders: false, // Désactive les headers `X-RateLimit-*`
@@ -22,7 +22,7 @@ const loginLimiter = rateLimit({
 // Limiter pour le register (éviter spam d'inscriptions)
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 heure
-  max: 3, // Limite à 3 inscriptions par heure par IP
+  max: 10, // Limite à 10 inscriptions par heure par IP (permet usage familial/bureau)
   message: "Trop d'inscriptions depuis cette IP, veuillez réessayer dans 1 heure",
   standardHeaders: true,
   legacyHeaders: false,
