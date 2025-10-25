@@ -1,7 +1,23 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 import ProductItem from "./ProductItem";
 import "./ProductsByAisle.scss";
+
+// Phrases de célébration loufoques quand toutes les courses sont finies
+const CELEBRATION_MESSAGES = [
+  "« Faire les courses, c'est bien. Les finir, c'est mieux. » - Confucius (probablement) 🎉",
+  "ACHIEVEMENT UNLOCKED : Maître des Caddies 🏆",
+  "Tu as terminé ! Ton frigo t'attend comme un golden retriever à la porte 🐕",
+  "Houston, toutes les courses ont été ramassées. Je répète : TOUTES. 🚀",
+  "Félicitations ! Tu viens de débloquer le badge 'Ninja du Supermarché' 🥷",
+  "« Une liste cochée vaut mieux que deux courses oubliées » - Proverbe inventé à l'instant 📜",
+  "BRAVO ! Tu peux maintenant rentrer fièrement avec 47 trucs que tu n'avais pas prévus 🛒",
+  "Terminé ! Bon maintenant faut tout porter jusqu'à la voiture... Courage. 💪",
+  "GG WP ! (Good Groceries Well Purchased) 🎮",
+  "Mission accomplie, Agent 007. Le yaourt aux fraises a été récupéré. 🕵️",
+  "Tu as tout pris ! Même le truc bizarre que tu regrettes déjà d'avoir mis dans le caddie 🎪",
+  "FATALITY ! Liste annihilée. Flawless Victory. 🎯",
+];
 
 export default function ProductsByAisle({
   rayonList,
@@ -11,6 +27,7 @@ export default function ProductsByAisle({
   onRenameProduct,
   onRemoveProduct,
   onAddProductToList,
+  celebrationTextRef,
 }) {
   const checkedProducts = list?.checkedProducts || [];
 
@@ -26,6 +43,20 @@ export default function ProductsByAisle({
     .sort((a, b) =>
       a.title.localeCompare(b.title, "fr", { sensitivity: "base" })
     );
+
+  // Choisir une phrase aléatoire quand tous les produits sont cochés
+  const celebrationMessage = useMemo(() => {
+    const totalProducts = allProducts.length;
+    const checkedCount = checkedProducts.length;
+
+    // Si tous les produits sont cochés, choisir une phrase au hasard
+    if (totalProducts > 0 && checkedCount === totalProducts) {
+      const randomIndex = Math.floor(Math.random() * CELEBRATION_MESSAGES.length);
+      return CELEBRATION_MESSAGES[randomIndex];
+    }
+
+    return null;
+  }, [allProducts.length, checkedProducts.length]);
 
   // Filtrer les produits non cochés dans chaque rayon
   const rayonsWithUncheckedProducts = rayonList
@@ -87,13 +118,14 @@ export default function ProductsByAisle({
       )}
 
       {/* Message si tous les produits sont cochés */}
-      {allProducts.length > 0 &&
-        rayonsWithUncheckedProducts.length === 0 &&
-        checkedProductsList.length > 0 && (
-          <p className="text-muted text-center mt-4 mb-4">
-            Tout est coché ! Bravo, les courses sont terminées !
-          </p>
-        )}
+      {celebrationMessage && (
+        <p
+          ref={celebrationTextRef}
+          className="text-muted text-center mt-4 mb-4"
+        >
+          {celebrationMessage}
+        </p>
+      )}
 
       {/* Système d'onglets */}
       <Tabs defaultActiveKey="panier" className="mt-4 list-tabs">
