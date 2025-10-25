@@ -1,4 +1,5 @@
 import React from "react";
+import { Form } from "react-bootstrap";
 
 import useProducts from "./useProducts";
 import ProductForm from "./ProductForm";
@@ -41,24 +42,40 @@ export default function Products({ userId }) {
       {/* Liste des produits ou état vide */}
       {!products || products.length < 1 ? (
         <EmptyProducts />
-      ) : filteredProducts.length > 0 ? (
-        <ProductList
-          products={filteredProducts}
-          deleteProduct={deleteProduct}
-          currentProduct={currentProduct}
-          updateProduct={updateProduct}
-          aisles={aisles}
-          onEdit={setCurrentProduct}
-          onCancelEdit={() => setCurrentProduct(null)}
-          filterProducts={filterProducts}
-          sortProducts={sortProducts}
-          sortBy={sortBy}
-          deleteAllProducts={deleteAllProducts}
-        />
       ) : (
-        <p className="text-muted">
-          Aucun produit ne correspond à votre recherche.
-        </p>
+        <>
+          {/* Barre de recherche toujours visible si des produits existent */}
+          <h5 className="mt-4">Tous vos produits ({products.length})</h5>
+          <Form className="my-3">
+            <Form.Group controlId="searchProduct">
+              <Form.Label className="fw-bold">Cherche un produit :</Form.Label>
+              <Form.Control
+                type="text"
+                onChange={(e) => filterProducts(e.target.value)}
+                placeholder="Ex : chocolat"
+              />
+            </Form.Group>
+          </Form>
+
+          {filteredProducts.length > 0 ? (
+            <ProductList
+              products={filteredProducts}
+              deleteProduct={deleteProduct}
+              currentProduct={currentProduct}
+              updateProduct={updateProduct}
+              aisles={aisles}
+              onEdit={setCurrentProduct}
+              onCancelEdit={() => setCurrentProduct(null)}
+              sortProducts={sortProducts}
+              sortBy={sortBy}
+              deleteAllProducts={deleteAllProducts}
+            />
+          ) : (
+            <p className="text-muted">
+              Aucun produit ne correspond à votre recherche.
+            </p>
+          )}
+        </>
       )}
     </PageLayout>
   );

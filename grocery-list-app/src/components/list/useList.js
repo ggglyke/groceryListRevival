@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 
 import ListDataService from "../../services/list.service";
@@ -17,6 +17,14 @@ export default function useList({ listId, userId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listDeleted, setListDeleted] = useState(false);
+
+  // Ref to always have the most recent list state (for handling rapid clicks)
+  const listRef = useRef(list);
+
+  // Update listRef whenever list changes
+  useEffect(() => {
+    listRef.current = list;
+  }, [list]);
 
   // Helper function to prepare list data for backend (strip populated objects)
   const prepareListForBackend = useCallback((listData) => {
@@ -213,16 +221,19 @@ export default function useList({ listId, userId }) {
           (m) => m._id === listData.magasin?._id || m._id === listData.magasin
         );
 
-        // Order products by aisle
-        const productsInList = listData.products || [];
+        // Order products by aisle - combiner products ET customProducts
+        const regularProducts = listData.products || [];
+        const customProducts = listData.customProducts || [];
+        const allProducts = [...regularProducts, ...customProducts];
+
         const orderedRayonList = orderProducts(
-          productsInList,
+          allProducts,
           magasin,
           aislesData
         );
 
         setRayonList(orderedRayonList);
-        setProductsToDisplay(productsInList);
+        setProductsToDisplay(allProducts);
       }
     } catch (e) {
       console.error("Error fetching data:", e);
@@ -239,11 +250,16 @@ export default function useList({ listId, userId }) {
       const magasin = magasins.find(
         (m) => m._id === listData.magasin?._id || m._id === listData.magasin
       );
-      const productsInList = listData.products || [];
-      const orderedRayonList = orderProducts(productsInList, magasin, aisles);
+
+      // Combiner products ET customProducts
+      const regularProducts = listData.products || [];
+      const customProducts = listData.customProducts || [];
+      const allProducts = [...regularProducts, ...customProducts];
+
+      const orderedRayonList = orderProducts(allProducts, magasin, aisles);
 
       setRayonList(orderedRayonList);
-      setProductsToDisplay(productsInList);
+      setProductsToDisplay(allProducts);
     }
   }, [fetchList, magasins, aisles, orderProducts]);
 
@@ -256,27 +272,26 @@ export default function useList({ listId, userId }) {
   // Toggle product checked state
   const toggleCheck = useCallback(
     async (productId) => {
-      if (!list) return;
+      if (!listRef.current) return;
 
       try {
-        const isCurrentlyChecked = list.checkedProducts.includes(productId);
-        let updatedList;
+        // Use listRef.current to always get the most recent state (handles rapid clicks)
+        const isCurrentlyChecked = listRef.current.checkedProducts.includes(productId);
 
-        if (isCurrentlyChecked) {
-          // Uncheck: remove from checkedProducts
-          updatedList = {
-            ...list,
-            checkedProducts: list.checkedProducts.filter(
-              (id) => id !== productId
-            ),
-          };
-        } else {
-          // Check: add to checkedProducts
-          updatedList = {
-            ...list,
-            checkedProducts: [...list.checkedProducts, productId],
-          };
-        }
+        // Calculer updatedList avec listRef.current (état le plus récent)
+        const updatedList = isCurrentlyChecked
+          ? {
+              // Uncheck: remove from checkedProducts
+              ...listRef.current,
+              checkedProducts: listRef.current.checkedProducts.filter(
+                (id) => id !== productId
+              ),
+            }
+          : {
+              // Check: add to checkedProducts
+              ...listRef.current,
+              checkedProducts: [...listRef.current.checkedProducts, productId],
+            };
 
         // Optimistic update
         setList(updatedList);
@@ -295,7 +310,7 @@ export default function useList({ listId, userId }) {
         await refetchList();
       }
     },
-    [list, listId, userId, refetchList, prepareListForBackend]
+    [listId, refetchList, prepareListForBackend]
   );
 
   // Remove product from list
@@ -304,42 +319,43 @@ export default function useList({ listId, userId }) {
       if (!list) return;
 
       try {
-        let updatedList;
-
-        if (isCustomProduct) {
-          // Remove from customProducts array
-          updatedList = {
-            ...list,
-            customProducts: list.customProducts.filter(
-              (p) => p._id !== productId
-            ),
-          };
-        } else {
-          // Remove from products and checkedProducts arrays
-          updatedList = {
-            ...list,
-            products: list.products.filter((p) => p._id !== productId),
-            checkedProducts: list.checkedProducts.filter(
-              (id) => id !== productId
-            ),
-          };
-        }
+        // Calculer updatedList AVANT le setList
+        const updatedList = isCustomProduct
+          ? {
+              ...list,
+              customProducts: list.customProducts.filter(
+                (p) => p._id !== productId
+              ),
+            }
+          : {
+              ...list,
+              products: list.products.filter((p) => p._id !== productId),
+              checkedProducts: list.checkedProducts.filter(
+                (id) => id !== productId
+              ),
+            };
 
         // Optimistic update
         setList(updatedList);
 
         // Update productsToDisplay for immediate UI feedback
-        if (!isCustomProduct) {
-          setProductsToDisplay((prev) =>
-            prev.filter((p) => p._id !== productId)
+        const newProductsToDisplay = isCustomProduct
+          ? productsToDisplay.filter((p) => p._id !== productId)
+          : productsToDisplay.filter((p) => p._id !== productId);
+
+        setProductsToDisplay(newProductsToDisplay);
+
+        // Recalculate rayonList with remaining products
+        if (magasins.length > 0 && aisles.length > 0) {
+          const magasin = magasins.find(
+            (m) => m._id === list.magasin?._id || m._id === list.magasin
           );
+          const newRayonList = orderProducts(newProductsToDisplay, magasin, aisles);
+          setRayonList(newRayonList);
         }
 
         // Backend update
         await ListDataService.update(listId, prepareListForBackend(updatedList));
-
-        // Refetch to update rayonList
-        await refetchList();
 
         toast.success("Produit retiré de la liste", {
           position: "top-right",
@@ -353,7 +369,7 @@ export default function useList({ listId, userId }) {
         await refetchList();
       }
     },
-    [list, listId, userId, refetchList, prepareListForBackend]
+    [list, listId, userId, refetchList, prepareListForBackend, magasins, aisles, orderProducts, productsToDisplay]
   );
 
   // Rename product (add customName)
@@ -364,30 +380,31 @@ export default function useList({ listId, userId }) {
       try {
         let updatedList;
 
-        if (isCustomProduct) {
-          // Update custom product title
-          updatedList = {
-            ...list,
-            customProducts: list.customProducts.map((p) =>
-              p._id === productId ? { ...p, title: newName } : p
-            ),
-          };
-        } else {
-          // Add customName to regular product
-          updatedList = {
-            ...list,
-            productCustomNames: {
-              ...(list.productCustomNames || {}),
-              [productId]: newName
-            },
-            products: list.products.map((p) =>
-              p._id === productId ? { ...p, customName: newName } : p
-            ),
-          };
-        }
-
-        // Optimistic update
-        setList(updatedList);
+        // Optimistic update - utiliser la forme fonctionnelle
+        setList((prevList) => {
+          if (isCustomProduct) {
+            // Update custom product title
+            updatedList = {
+              ...prevList,
+              customProducts: prevList.customProducts.map((p) =>
+                p._id === productId ? { ...p, title: newName } : p
+              ),
+            };
+          } else {
+            // Add customName to regular product
+            updatedList = {
+              ...prevList,
+              productCustomNames: {
+                ...(prevList.productCustomNames || {}),
+                [productId]: newName
+              },
+              products: prevList.products.map((p) =>
+                p._id === productId ? { ...p, customName: newName } : p
+              ),
+            };
+          }
+          return updatedList;
+        });
 
         // Backend update
         await ListDataService.update(
@@ -427,16 +444,17 @@ export default function useList({ listId, userId }) {
           const isChecked = list.checkedProducts.includes(productId);
 
           if (isChecked) {
-            // Uncheck the product
-            const updatedList = {
-              ...list,
-              checkedProducts: list.checkedProducts.filter(
-                (id) => id !== productId
-              ),
-            };
-
-            // Optimistic update
-            setList(updatedList);
+            // Uncheck the product - utiliser la forme fonctionnelle
+            let updatedList;
+            setList((prevList) => {
+              updatedList = {
+                ...prevList,
+                checkedProducts: prevList.checkedProducts.filter(
+                  (id) => id !== productId
+                ),
+              };
+              return updatedList;
+            });
 
             // Backend update
             await ListDataService.update(
@@ -470,15 +488,17 @@ export default function useList({ listId, userId }) {
           return;
         }
 
-        // Add to products array
-        const updatedList = {
-          ...list,
-          products: [...list.products, productToAdd],
-        };
+        // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
+        let updatedList;
+        setList((prevList) => {
+          updatedList = {
+            ...prevList,
+            products: [...prevList.products, productToAdd],
+          };
+          return updatedList;
+        });
 
-        // Optimistic update
-        setList(updatedList);
-        setProductsToDisplay([...list.products, productToAdd]);
+        setProductsToDisplay((prev) => [...prev, productToAdd]);
 
         // Backend update
         await ListDataService.update(listId, prepareListForBackend(updatedList));
@@ -527,14 +547,15 @@ export default function useList({ listId, userId }) {
 
           const createdProduct = response.data.product;
 
-          // Add the database product to the list
-          const updatedList = {
-            ...list,
-            products: [...list.products, { _id: createdProduct._id }],
-          };
-
-          // Optimistic update
-          setList(updatedList);
+          // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
+          let updatedList;
+          setList((prevList) => {
+            updatedList = {
+              ...prevList,
+              products: [...prevList.products, { _id: createdProduct._id }],
+            };
+            return updatedList;
+          });
 
           // Backend update
           await ListDataService.update(listId, updatedList, userId);
@@ -561,14 +582,15 @@ export default function useList({ listId, userId }) {
             rayon: rayonId,
           };
 
-          // Add to customProducts array (ensure it exists)
-          const updatedList = {
-            ...list,
-            customProducts: [...(list.customProducts || []), newCustomProduct],
-          };
-
-          // Optimistic update
-          setList(updatedList);
+          // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
+          let updatedList;
+          setList((prevList) => {
+            updatedList = {
+              ...prevList,
+              customProducts: [...(prevList.customProducts || []), newCustomProduct],
+            };
+            return updatedList;
+          });
 
           // Backend update
           await ListDataService.update(
@@ -601,19 +623,22 @@ export default function useList({ listId, userId }) {
     if (!list || list.checkedProducts.length === 0) return;
 
     try {
-      const updatedList = {
-        ...list,
-        products: list.products.filter(
-          (p) => !list.checkedProducts.includes(p._id)
-        ),
-        customProducts: list.customProducts.filter(
-          (p) => !list.checkedProducts.includes(p._id)
-        ),
-        checkedProducts: [],
-      };
+      // Optimistic update - utiliser la forme fonctionnelle
+      let updatedList;
+      setList((prevList) => {
+        updatedList = {
+          ...prevList,
+          products: prevList.products.filter(
+            (p) => !prevList.checkedProducts.includes(p._id)
+          ),
+          customProducts: prevList.customProducts.filter(
+            (p) => !prevList.checkedProducts.includes(p._id)
+          ),
+          checkedProducts: [],
+        };
+        return updatedList;
+      });
 
-      // Optimistic update
-      setList(updatedList);
       setProductsToDisplay(updatedList.products);
 
       // Backend update
@@ -640,15 +665,18 @@ export default function useList({ listId, userId }) {
     if (!list) return;
 
     try {
-      const updatedList = {
-        ...list,
-        products: [],
-        checkedProducts: [],
-        customProducts: [],
-      };
+      // Optimistic update - utiliser la forme fonctionnelle
+      let updatedList;
+      setList((prevList) => {
+        updatedList = {
+          ...prevList,
+          products: [],
+          checkedProducts: [],
+          customProducts: [],
+        };
+        return updatedList;
+      });
 
-      // Optimistic update
-      setList(updatedList);
       setProductsToDisplay([]);
       setRayonList([]);
 
@@ -680,13 +708,15 @@ export default function useList({ listId, userId }) {
       if (!list || !newTitle.trim()) return;
 
       try {
-        const updatedList = {
-          ...list,
-          title: newTitle,
-        };
-
-        // Optimistic update
-        setList(updatedList);
+        // Optimistic update - utiliser la forme fonctionnelle
+        let updatedList;
+        setList((prevList) => {
+          updatedList = {
+            ...prevList,
+            title: newTitle,
+          };
+          return updatedList;
+        });
 
         // Backend update
         await ListDataService.update(
@@ -718,13 +748,15 @@ export default function useList({ listId, userId }) {
       if (!list) return;
 
       try {
-        const updatedList = {
-          ...list,
-          magasin: magasinId,
-        };
-
-        // Optimistic update
-        setList(updatedList);
+        // Optimistic update - utiliser la forme fonctionnelle
+        let updatedList;
+        setList((prevList) => {
+          updatedList = {
+            ...prevList,
+            magasin: magasinId,
+          };
+          return updatedList;
+        });
 
         // Backend update
         await ListDataService.update(

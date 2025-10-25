@@ -1,5 +1,5 @@
 import React from "react";
-import { ListGroup, Form } from "react-bootstrap";
+import { ListGroup } from "react-bootstrap";
 import { FaSortUp, FaSort, FaSortDown } from "react-icons/fa";
 import ProductItem from "./ProductItem";
 
@@ -11,24 +11,12 @@ export default function ProductList({
   aisles,
   onEdit,
   onCancelEdit,
-  filterProducts,
   sortProducts,
   sortBy,
   deleteAllProducts,
 }) {
   return (
     <>
-      <h5 className="mt-4">Tous vos produits ({products.length})</h5>
-      <Form className="my-3">
-        <Form.Group controlId="searchProduct">
-          <Form.Label className="fw-bold">Cherche un produit :</Form.Label>
-          <Form.Control
-            type="text"
-            onChange={(e) => filterProducts(e.target.value)}
-            placeholder="Ex : chocolat"
-          ></Form.Control>
-        </Form.Group>
-      </Form>
       <div className="sorting d-flex justify-content-between text-small my-2">
         <div
           className="sortItem d-flex align-items-center"

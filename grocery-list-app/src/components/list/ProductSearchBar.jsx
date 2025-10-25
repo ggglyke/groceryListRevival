@@ -30,8 +30,15 @@ export default function ProductSearchBar({
 
   const handleQuickAdd = () => {
     const defaultAisle = aisles.find((a) => a.isDefault);
-    if (defaultAisle && newProductName.trim()) {
-      onAddCustomProductToList(newProductName, defaultAisle._id, alsoAddToDatabase);
+
+    if (!defaultAisle) {
+      console.error('Aucun rayon par défaut trouvé !');
+      return;
+    }
+
+    if (newProductName.trim()) {
+      // Ajout rapide = produit temporaire (customProduct), pas dans la DB
+      onAddCustomProductToList(newProductName, defaultAisle._id, false);
       setNewProductName("");
     }
   };

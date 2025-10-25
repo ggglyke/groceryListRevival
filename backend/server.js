@@ -56,9 +56,11 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting général
-const { generalLimiter } = require("./middlewares/rateLimiter.middleware");
-app.use("/api/", generalLimiter);
+// Rate limiting général - Désactivé en développement
+if (process.env.NODE_ENV === "production") {
+  const { generalLimiter } = require("./middlewares/rateLimiter.middleware");
+  app.use("/api/", generalLimiter);
+}
 
 // CSRF Protection - Désactivé en développement pour simplifier
 if (process.env.NODE_ENV === "production") {

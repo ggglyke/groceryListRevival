@@ -12,6 +12,7 @@ export default function ProductItem({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleEdit = () => {
     // Get the current display name (customName or title)
@@ -39,7 +40,23 @@ export default function ProductItem({
   };
 
   const handleCheck = () => {
-    onToggleCheck(product._id);
+    // Si déjà en animation, ne rien faire
+    if (isAnimating) return;
+
+    // Si le produit est déjà coché, décoche immédiatement sans animation
+    if (isChecked) {
+      onToggleCheck(product._id);
+      return;
+    }
+
+    // Produit non coché → coché : déclencher l'animation
+    setIsAnimating(true);
+
+    // Attendre la fin de l'animation avant de déplacer le produit
+    setTimeout(() => {
+      onToggleCheck(product._id);
+      setIsAnimating(false);
+    }, 600);
   };
 
   // Display name: customName if exists, otherwise title
@@ -49,7 +66,7 @@ export default function ProductItem({
     <li
       className={`list-group-item py-2 product d-flex justify-content-between align-items-center${
         isChecked ? " checked" : ""
-      }`}
+      }${isAnimating ? " animating-check" : ""}`}
     >
       {isEditing ? (
         <Form

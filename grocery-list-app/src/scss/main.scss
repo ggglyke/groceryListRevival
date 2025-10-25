@@ -35,6 +35,33 @@
   }
 }
 
+// Animation pour le texte barré avant déplacement
+.animating-check {
+  .product-title {
+    position: relative;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 60%;
+      height: 2px;
+      background-color: #666;
+      width: 0%;
+      animation: strikethrough 0.2s ease-out forwards;
+    }
+  }
+}
+
+@keyframes strikethrough {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
 .list-container {
   background-color: #fff;
   border-radius: 6px;
