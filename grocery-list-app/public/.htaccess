@@ -1,17 +1,21 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteBase /groceryList/
 
   # Force HTTPS (décommenter si tu veux forcer le HTTPS)
   # RewriteCond %{HTTPS} off
   # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # NE PAS rediriger les fichiers statiques (CSS, JS, images, fonts, etc.)
+  RewriteCond %{REQUEST_URI} !^/groceryList/static/
+  RewriteCond %{REQUEST_URI} !^/groceryList/.*\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|json|txt|xml)$ [NC]
 
   # Si le fichier ou dossier existe, le servir directement
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
   # Sinon, rediriger vers index.html (pour le routing React)
-  # ⚠️ Adapter le chemin selon ton serveur : /groceryList/index.html ou juste /index.html
-  RewriteRule . /groceryList/index.html [L]
+  RewriteRule ^ index.html [L]
 </IfModule>
 
 # Compression GZIP pour améliorer les performances
