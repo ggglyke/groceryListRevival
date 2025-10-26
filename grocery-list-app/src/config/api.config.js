@@ -12,7 +12,7 @@
 
 const API_URLS = {
   development: "http://localhost:8080/api",
-  production: "https://grocery-list-app-backend.onrender.com/api",
+  production: "https://grocerylistrevival.onrender.com/api",
 };
 
 // Déterminer l'environnement
