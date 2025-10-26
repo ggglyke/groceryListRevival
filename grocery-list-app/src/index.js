@@ -12,10 +12,13 @@ import reportWebVitals from "./reportWebVitals";
 const container = document.getElementById("root");
 const root = createRoot(container);
 
+// Basename pour le Router : vide en prod (chemins relatifs), "/groceryList" en dev
+const basename = process.env.REACT_APP_ROUTER_BASENAME || "";
+
 root.render(
   <CookiesProvider defaultSetOptions={{ path: "/", sameSite: "lax" }}>
     <AuthProvider>
-      <Router>
+      <Router basename={basename}>
         <App />
       </Router>
     </AuthProvider>
