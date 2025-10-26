@@ -80,8 +80,8 @@ exports.login = async (req, res, next) => {
 
     res.cookie("jwt", token, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.COOKIE_SECURE === "true", // true en production avec HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" pour cross-domain en prod
+      secure: process.env.NODE_ENV === "production" || process.env.COOKIE_SECURE === "true", // OBLIGATOIRE avec sameSite=none
       path: "/",
       maxAge: maxAge * 1000,
     });
