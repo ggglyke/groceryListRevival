@@ -2,7 +2,7 @@
   "name": "grocery-list-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/groceryList/",
+  "homepage": "/groceryListRevival/",
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "*",
     "@babel/preset-env": "^7.22.3",
