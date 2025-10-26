@@ -7,6 +7,10 @@ const helmet = require("helmet");
 
 const app = express();
 
+// Trust proxy - OBLIGATOIRE sur Render.com et autres plateformes hébergées
+// Permet à Express de faire confiance aux headers X-Forwarded-* ajoutés par le reverse proxy
+app.set('trust proxy', 1);
+
 // Security headers avec Helmet
 app.use(
   helmet({
