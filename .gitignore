@@ -1,7 +1,11 @@
 /backend/node_modules
 /backend/back.zip
 /backend/.env
+/backend/.env.local
+/backend/.env.production
 /grocery-list-app/node_modules
 /grocery-list-app/.env
+/grocery-list-app/.env.local
+/grocery-list-app/.env.production
 /grocery-list-app/front.zip
 /grocery-list-app/build
