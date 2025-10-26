@@ -66,10 +66,15 @@ if (process.env.NODE_ENV === "production") {
   app.use("/api/", generalLimiter);
 }
 
-// CSRF Protection - Désactivé en développement pour simplifier
-if (process.env.NODE_ENV === "production") {
+// CSRF Protection - TEMPORAIREMENT DÉSACTIVÉ EN PRODUCTION
+// TODO: Implémenter correctement le CSRF côté frontend avant de réactiver
+// Le frontend doit récupérer le token via /api/csrf-token et l'envoyer dans les headers
+const ENABLE_CSRF = process.env.ENABLE_CSRF === "true";
+
+if (process.env.NODE_ENV === "production" && ENABLE_CSRF) {
   const { doubleCsrfProtection } = require("./middlewares/csrf.middleware");
   app.use(doubleCsrfProtection);
+  console.log("[PROD] CSRF protection enabled");
 
   // Route to get CSRF token (production uniquement)
   app.get("/api/csrf-token", (req, res) => {
@@ -78,11 +83,15 @@ if (process.env.NODE_ENV === "production") {
     res.json({ csrfToken: token });
   });
 } else {
-  console.log("[DEV] CSRF protection is disabled in development mode");
+  if (process.env.NODE_ENV === "production") {
+    console.log("[PROD] CSRF protection is DISABLED - Set ENABLE_CSRF=true to enable");
+  } else {
+    console.log("[DEV] CSRF protection is disabled in development mode");
+  }
 
-  // Route dummy pour le développement
+  // Route dummy
   app.get("/api/csrf-token", (_req, res) => {
-    res.json({ csrfToken: "dev-mode-no-csrf" });
+    res.json({ csrfToken: "csrf-disabled" });
   });
 }
 
