@@ -15,7 +15,7 @@ const root = createRoot(container);
 root.render(
   <CookiesProvider defaultSetOptions={{ path: "/", sameSite: "lax" }}>
     <AuthProvider>
-      <Router basename="/groceryList">
+      <Router>
         <App />
       </Router>
     </AuthProvider>
