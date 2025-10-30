@@ -444,17 +444,15 @@ export default function useList({ listId, userId }) {
           const isChecked = list.checkedProducts.includes(productId);
 
           if (isChecked) {
-            // Uncheck the product - utiliser la forme fonctionnelle
-            let updatedList;
-            setList((prevList) => {
-              updatedList = {
-                ...prevList,
-                checkedProducts: prevList.checkedProducts.filter(
-                  (id) => id !== productId
-                ),
-              };
-              return updatedList;
-            });
+            // Uncheck the product
+            const updatedList = {
+              ...list,
+              checkedProducts: list.checkedProducts.filter(
+                (id) => id !== productId
+              ),
+            };
+
+            setList(updatedList);
 
             // Backend update
             await ListDataService.update(
@@ -488,16 +486,13 @@ export default function useList({ listId, userId }) {
           return;
         }
 
-        // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
-        let updatedList;
-        setList((prevList) => {
-          updatedList = {
-            ...prevList,
-            products: [...prevList.products, productToAdd],
-          };
-          return updatedList;
-        });
+        // Optimistic update
+        const updatedList = {
+          ...list,
+          products: [...list.products, productToAdd],
+        };
 
+        setList(updatedList);
         setProductsToDisplay((prev) => [...prev, productToAdd]);
 
         // Backend update
