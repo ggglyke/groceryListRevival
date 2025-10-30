@@ -10,7 +10,7 @@ import "../scss/login-register.scss";
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setAuthenticated, verify } = useAuth();
+  const { authenticated, setAuthenticated, verify } = useAuth();
 
   const [values, setValues] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -20,6 +20,13 @@ export default function Login() {
     [location.search]
   );
   const isAccountCreated = query.get("accountCreated") === "true";
+
+  // Redirige vers /lists si l'utilisateur est déjà connecté
+  useEffect(() => {
+    if (authenticated) {
+      navigate("/lists", { replace: true });
+    }
+  }, [authenticated, navigate]);
 
   useEffect(() => {
     if (isAccountCreated) {

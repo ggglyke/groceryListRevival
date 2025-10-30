@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
         setState({
           loading: false,
           authenticated: true,
-          user: { _id: data.userId },
+          user: { _id: data.userId, username: data.username },
         });
       } else {
         setState({ loading: false, authenticated: false, user: null });

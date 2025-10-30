@@ -100,12 +100,22 @@ exports.login = async (req, res, next) => {
   }
 };
 
-exports.verify = (req, res) => {
+exports.verify = async (req, res) => {
   try {
     const token = req.cookies?.jwt;
     if (!token) return res.status(200).json({ authenticated: false });
+
     const data = jwt.verify(token, JWT_SECRET);
-    return res.status(200).json({ authenticated: true, userId: data.id });
+
+    // Récupère le username depuis la base de données
+    const user = await User.findById(data.id);
+    if (!user) return res.status(200).json({ authenticated: false });
+
+    return res.status(200).json({
+      authenticated: true,
+      userId: data.id,
+      username: user.username
+    });
   } catch {
     return res.status(200).json({ authenticated: false });
   }

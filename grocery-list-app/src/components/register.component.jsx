@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 import UserDataService from "../services/user.service";
 import MagasinDataService from "../services/magasin.service";
 import AisleDataService from "../services/aisle.service";
@@ -13,11 +14,20 @@ import "../scss/login-register.scss";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { authenticated } = useAuth();
+
   const [userData, setUserData] = useState({
     username: "",
     email: "",
     password: "",
   });
+
+  // Redirige vers /lists si l'utilisateur est déjà connecté
+  useEffect(() => {
+    if (authenticated) {
+      navigate("/lists", { replace: true });
+    }
+  }, [authenticated, navigate]);
 
   const generateError = (err) =>
     toast.error(err, {
