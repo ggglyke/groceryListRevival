@@ -12,7 +12,15 @@ export function AuthProvider({ children }) {
 
   const verify = useCallback(async () => {
     try {
-      const { data } = await http.get("/users/verify"); // { authenticated, userId? }
+      // Timeout de 5s pour éviter d'attendre indéfiniment si Render.com démarre
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 5000)
+      );
+
+      const verifyPromise = http.get("/users/verify"); // { authenticated, userId? }
+
+      const { data } = await Promise.race([verifyPromise, timeoutPromise]);
+
       if (data?.authenticated) {
         setState({
           loading: false,
@@ -22,7 +30,11 @@ export function AuthProvider({ children }) {
       } else {
         setState({ loading: false, authenticated: false, user: null });
       }
-    } catch {
+    } catch (err) {
+      // En cas d'erreur ou timeout, on considère non authentifié
+      if (err.message === "Timeout") {
+        console.log("[Auth] Timeout verify() - serveur Render.com peut être en démarrage");
+      }
       setState({ loading: false, authenticated: false, user: null });
     }
   }, []);

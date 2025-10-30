@@ -131,7 +131,7 @@ app.get("/healthz", (req, res) => res.status(200).send("ok"));
 // keep-alive interne
 const ENABLE_SELF_PING = process.env.ENABLE_SELF_PING === "1";
 const SELF_URL =
-  process.env.SELF_URL || "https://grocery-list-app-backend.onrender.com/";
+  process.env.SELF_URL || "https://grocerylistrevival.onrender.com";
 const PING_INTERVAL_MS = Number(process.env.PING_INTERVAL_MS || 14 * 60 * 1000);
 
 if (process.env.NODE_ENV === "production" && ENABLE_SELF_PING) {

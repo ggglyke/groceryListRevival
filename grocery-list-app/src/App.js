@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,14 +19,25 @@ import PrivateRoute from "./components/privateRoute.component";
 import Login from "./components/login.component";
 import Register from "./components/register.component";
 
+// Routes publiques qui ne nécessitent pas d'attendre verify()
+const PUBLIC_ROUTES = ["/", "/login", "/register", "/list-testing"];
+
 export default function App() {
   const { loading, authenticated, verify, user } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     verify();
   }, [verify]);
 
-  if (loading) return <div className="p-4">Chargement…</div>;
+  // Skip le loading pour les routes publiques (améliore l'UX si Render.com démarre lentement)
+  const isPublicRoute = PUBLIC_ROUTES.some(route =>
+    location.pathname === route || location.pathname.startsWith(route + "/")
+  );
+
+  if (loading && !isPublicRoute) {
+    return <div className="p-4">Chargement…</div>;
+  }
 
   return (
     <>
