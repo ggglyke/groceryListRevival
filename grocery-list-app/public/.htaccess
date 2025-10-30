@@ -1,6 +1,9 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Base du sous-dossier où l'app est déployée
+  RewriteBase /groceryListRevival/
+
   # Si le fichier ou dossier existe, le servir directement
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
