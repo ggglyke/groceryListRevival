@@ -47,16 +47,21 @@ export default function ProductsByAisle({
   // Choisir une phrase aléatoire quand tous les produits sont cochés
   const celebrationMessage = useMemo(() => {
     const totalProducts = allProducts.length;
-    const checkedCount = checkedProducts.length;
 
-    // Si tous les produits sont cochés, choisir une phrase au hasard
-    if (totalProducts > 0 && checkedCount === totalProducts) {
+    // Filtrer pour ne compter que les produits cochés qui existent vraiment dans la liste
+    const allProductIds = allProducts.map(p => p._id);
+    const validCheckedIds = checkedProducts.filter(id => allProductIds.includes(id));
+    const checkedCount = validCheckedIds.length;
+    const uncheckedCount = totalProducts - checkedCount;
+
+    // Si tous les produits sont cochés (aucun produit non coché restant), choisir une phrase au hasard
+    if (totalProducts > 0 && uncheckedCount === 0) {
       const randomIndex = Math.floor(Math.random() * CELEBRATION_MESSAGES.length);
       return CELEBRATION_MESSAGES[randomIndex];
     }
 
     return null;
-  }, [allProducts.length, checkedProducts.length]);
+  }, [allProducts, checkedProducts]);
 
   // Filtrer les produits non cochés dans chaque rayon
   const rayonsWithUncheckedProducts = rayonList
