@@ -44,11 +44,23 @@ export default function List({ userId }) {
   useEffect(() => {
     if (!list) return;
 
-    const totalProducts = (list.products?.length || 0) + (list.customProducts?.length || 0);
-    const checkedCount = list.checkedProducts?.length || 0;
+    // Get all product IDs (both regular and custom)
+    const allProductIds = [
+      ...(list.products || []).map(p => p._id),
+      ...(list.customProducts || []).map(p => p._id)
+    ];
 
-    // All products checked AND there's at least 1 product AND we haven't celebrated yet
-    if (totalProducts > 0 && checkedCount === totalProducts && !hasCelebratedRef.current) {
+    // Count how many products are checked (only count those that exist in the list)
+    const validCheckedIds = (list.checkedProducts || []).filter(id =>
+      allProductIds.includes(id)
+    );
+
+    const totalProducts = allProductIds.length;
+    const checkedCount = validCheckedIds.length;
+    const uncheckedCount = totalProducts - checkedCount;
+
+    // All products checked (no unchecked products remain) AND there's at least 1 product AND we haven't celebrated yet
+    if (totalProducts > 0 && uncheckedCount === 0 && !hasCelebratedRef.current) {
       hasCelebratedRef.current = true;
 
       // Wait a bit for the celebration text to render, then trigger confetti
@@ -69,7 +81,7 @@ export default function List({ userId }) {
     }
 
     // Reset celebration flag when products are unchecked
-    if (checkedCount < totalProducts) {
+    if (uncheckedCount > 0) {
       hasCelebratedRef.current = false;
     }
   }, [list]);
