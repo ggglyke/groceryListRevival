@@ -538,22 +538,25 @@ export default function useList({ listId, userId }) {
           const response = await ProductDataService.create({
             title: productTitle,
             rayon: rayonId,
+            user: userId,
           });
 
           const createdProduct = response.data.product;
 
-          // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
-          let updatedList;
-          setList((prevList) => {
-            updatedList = {
-              ...prevList,
-              products: [...prevList.products, { _id: createdProduct._id }],
-            };
-            return updatedList;
-          });
+          // Optimistic update
+          const updatedList = {
+            ...list,
+            products: [...list.products, { _id: createdProduct._id }],
+          };
+
+          setList(updatedList);
 
           // Backend update
-          await ListDataService.update(listId, updatedList, userId);
+          await ListDataService.update(
+            listId,
+            prepareListForBackend(updatedList),
+            userId
+          );
 
           // Update product counter
           await ProductDataService.update(createdProduct._id, {
@@ -577,15 +580,13 @@ export default function useList({ listId, userId }) {
             rayon: rayonId,
           };
 
-          // Optimistic update - utiliser la forme fonctionnelle pour éviter les race conditions
-          let updatedList;
-          setList((prevList) => {
-            updatedList = {
-              ...prevList,
-              customProducts: [...(prevList.customProducts || []), newCustomProduct],
-            };
-            return updatedList;
-          });
+          // Optimistic update
+          const updatedList = {
+            ...list,
+            customProducts: [...(list.customProducts || []), newCustomProduct],
+          };
+
+          setList(updatedList);
 
           // Backend update
           await ListDataService.update(

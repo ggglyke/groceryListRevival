@@ -91,7 +91,7 @@ export default function ProductSearchBar({
         <Modal.Header closeButton>
           <Modal.Title>
             Ajouter &laquo;<span className="fw-bold">{newProductName}</span>
-            &raquo; � la liste
+            &raquo; à la liste
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmitNewProduct}>
@@ -123,13 +123,13 @@ export default function ProductSearchBar({
               {aisles.length < 1 ? (
                 <Form.Text className="text-small text-danger ms-2">
                   <span className="font-weight-bold">
-                    Vous n'avez configur� aucun rayon.
+                    Vous n'avez configuré aucun rayon.
                   </span>{" "}
                   <Link to="/aisles">Configurer</Link>
                 </Form.Text>
               ) : (
                 <Form.Text className="text-small text-muted ms-2">
-                  <Link to="/aisles">G�rer les rayons</Link>
+                  <Link to="/aisles">Gérer les rayons</Link>
                 </Form.Text>
               )}
             </Form.Group>
@@ -137,7 +137,7 @@ export default function ProductSearchBar({
               checked={alsoAddToDatabase}
               type="checkbox"
               id="custom-switch"
-              label="Ajouter �galement � la base de produits"
+              label="Ajouter également à la base de produits"
               onChange={(e) => setAlsoAddToDatabase(e.target.checked)}
             />
           </Modal.Body>
