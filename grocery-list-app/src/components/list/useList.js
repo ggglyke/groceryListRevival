@@ -333,6 +333,12 @@ export default function useList({ listId, userId }) {
               checkedProducts: list.checkedProducts.filter(
                 (id) => id !== productId
               ),
+              // Supprimer le nom personnalisé si le produit en avait un
+              productCustomNames: (() => {
+                const newCustomNames = { ...(list.productCustomNames || {}) };
+                delete newCustomNames[productId];
+                return newCustomNames;
+              })(),
             };
 
         // Optimistic update
