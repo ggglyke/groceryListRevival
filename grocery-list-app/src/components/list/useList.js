@@ -549,10 +549,10 @@ export default function useList({ listId, userId }) {
 
           const createdProduct = response.data.product;
 
-          // Optimistic update
+          // Optimistic update - add the complete product object
           const updatedList = {
             ...list,
-            products: [...list.products, { _id: createdProduct._id }],
+            products: [...list.products, createdProduct],
           };
 
           setList(updatedList);
@@ -564,14 +564,22 @@ export default function useList({ listId, userId }) {
             userId
           );
 
-          // Update product counter
-          await ProductDataService.update(createdProduct._id, {
-            times_added: 1,
-          });
+          // Update product counter (non-critical, don't fail if it errors)
+          try {
+            await ProductDataService.update(createdProduct._id, {
+              times_added: 1,
+            });
+          } catch (err) {
+            console.warn("Failed to update times_added counter:", err);
+          }
 
-          // Refetch products and list
-          await fetchDbProducts();
-          await refetchList();
+          // Refetch products and list (non-critical, we already have the data)
+          try {
+            await fetchDbProducts();
+            await refetchList();
+          } catch (err) {
+            console.warn("Failed to refetch after product creation:", err);
+          }
 
           toast.success("Produit ajouté à la liste et à la base de données", {
             position: "top-right",

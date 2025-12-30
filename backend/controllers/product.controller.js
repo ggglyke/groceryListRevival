@@ -8,7 +8,9 @@ exports.create = async (req, res) => {
     const { title, rayon } = req.body;
     // Use req.userId from requireAuth middleware
     const product = await Product.create({ user: req.userId, title, rayon });
-    return res.status(200).json({ product: product._id, created: true });
+    // Populate rayon to return complete product object
+    const populatedProduct = await Product.findById(product._id).populate("rayon", "title");
+    return res.status(200).json({ product: populatedProduct, created: true });
   } catch (err) {
     console.error(err);
     return res.status(500).send({
