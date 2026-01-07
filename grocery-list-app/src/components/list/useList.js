@@ -633,22 +633,20 @@ export default function useList({ listId, userId }) {
     if (!list || list.checkedProducts.length === 0) return;
 
     try {
-      // Optimistic update - utiliser la forme fonctionnelle
-      let updatedList;
-      setList((prevList) => {
-        updatedList = {
-          ...prevList,
-          products: prevList.products.filter(
-            (p) => !prevList.checkedProducts.includes(p._id)
-          ),
-          customProducts: prevList.customProducts.filter(
-            (p) => !prevList.checkedProducts.includes(p._id)
-          ),
-          checkedProducts: [],
-        };
-        return updatedList;
-      });
+      // Calculate updated list BEFORE setState (avoid race condition)
+      const updatedList = {
+        ...list,
+        products: list.products.filter(
+          (p) => !list.checkedProducts.includes(p._id)
+        ),
+        customProducts: list.customProducts.filter(
+          (p) => !list.checkedProducts.includes(p._id)
+        ),
+        checkedProducts: [],
+      };
 
+      // Optimistic update
+      setList(updatedList);
       setProductsToDisplay(updatedList.products);
 
       // Backend update
@@ -675,18 +673,16 @@ export default function useList({ listId, userId }) {
     if (!list) return;
 
     try {
-      // Optimistic update - utiliser la forme fonctionnelle
-      let updatedList;
-      setList((prevList) => {
-        updatedList = {
-          ...prevList,
-          products: [],
-          checkedProducts: [],
-          customProducts: [],
-        };
-        return updatedList;
-      });
+      // Calculate updated list BEFORE setState (avoid race condition)
+      const updatedList = {
+        ...list,
+        products: [],
+        checkedProducts: [],
+        customProducts: [],
+      };
 
+      // Optimistic update
+      setList(updatedList);
       setProductsToDisplay([]);
       setRayonList([]);
 
@@ -718,15 +714,14 @@ export default function useList({ listId, userId }) {
       if (!list || !newTitle.trim()) return;
 
       try {
-        // Optimistic update - utiliser la forme fonctionnelle
-        let updatedList;
-        setList((prevList) => {
-          updatedList = {
-            ...prevList,
-            title: newTitle,
-          };
-          return updatedList;
-        });
+        // Calculate updated list BEFORE setState (avoid race condition)
+        const updatedList = {
+          ...list,
+          title: newTitle,
+        };
+
+        // Optimistic update
+        setList(updatedList);
 
         // Backend update
         await ListDataService.update(
@@ -758,15 +753,14 @@ export default function useList({ listId, userId }) {
       if (!list) return;
 
       try {
-        // Optimistic update - utiliser la forme fonctionnelle
-        let updatedList;
-        setList((prevList) => {
-          updatedList = {
-            ...prevList,
-            magasin: magasinId,
-          };
-          return updatedList;
-        });
+        // Calculate updated list BEFORE setState (avoid race condition)
+        const updatedList = {
+          ...list,
+          magasin: magasinId,
+        };
+
+        // Optimistic update
+        setList(updatedList);
 
         // Backend update
         await ListDataService.update(
@@ -789,7 +783,7 @@ export default function useList({ listId, userId }) {
         await refetchList();
       }
     },
-    [list, listId, userId, refetchList, prepareListForBackend]
+    [list, listId, refetchList, prepareListForBackend]
   );
 
   // Delete list
