@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const { validatePassword } = require("../utils/passwordValidator");
 
-const maxAge = 3 * 24 * 60 * 60;
+const maxAge = 30 * 24 * 60 * 60; // 30 jours
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
