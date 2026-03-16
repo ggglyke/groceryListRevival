@@ -17,24 +17,43 @@ export function AuthProvider({ children }) {
         setTimeout(() => reject(new Error("Timeout")), 5000)
       );
 
-      const verifyPromise = http.get("/users/verify"); // { authenticated, userId? }
+      const verifyPromise = http.get("/users/verify");
 
       const { data } = await Promise.race([verifyPromise, timeoutPromise]);
 
       if (data?.authenticated) {
+        // Sauvegarder en cache local pour les cold starts
+        localStorage.setItem("auth_cache", JSON.stringify({
+          userId: data.userId,
+          username: data.username,
+          ts: Date.now(),
+        }));
         setState({
           loading: false,
           authenticated: true,
           user: { _id: data.userId, username: data.username },
         });
       } else {
+        localStorage.removeItem("auth_cache");
         setState({ loading: false, authenticated: false, user: null });
       }
     } catch (err) {
-      // En cas d'erreur ou timeout, on considère non authentifié
       if (err.message === "Timeout") {
-        console.log("[Auth] Timeout verify() - serveur Render.com peut être en démarrage");
+        console.log("[Auth] Timeout verify() - serveur Render.com en démarrage, vérification du cache");
+        // Cold start : utiliser le cache si récent (< 30 jours)
+        const cached = localStorage.getItem("auth_cache");
+        if (cached) {
+          const { userId, username, ts } = JSON.parse(cached);
+          const age = Date.now() - ts;
+          const maxCacheAge = 30 * 24 * 60 * 60 * 1000; // 30 jours
+          if (age < maxCacheAge) {
+            console.log("[Auth] Cache valide, utilisateur considéré connecté");
+            setState({ loading: false, authenticated: true, user: { _id: userId, username } });
+            return;
+          }
+        }
       }
+      localStorage.removeItem("auth_cache");
       setState({ loading: false, authenticated: false, user: null });
     }
   }, []);
@@ -45,6 +64,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logoutLocal = useCallback(() => {
+    localStorage.removeItem("auth_cache");
     setState({ loading: false, authenticated: false, user: null });
   }, []);
 

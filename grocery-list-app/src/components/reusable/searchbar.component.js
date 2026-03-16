@@ -57,9 +57,13 @@ export default class SearchBar extends Component {
     // prompt
     const searchWord = this.state.productName;
 
-    // create an array with products matching the prompt
+    // Normalize text to ignore accents (é→e, à→a, etc.)
+    const normalize = (str) =>
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    // create an array with products matching the prompt (accent-insensitive)
     let newFilter = this.props.dbProducts.filter((item) => {
-      return item.title.toLowerCase().includes(searchWord.toLowerCase());
+      return normalize(item.title).includes(normalize(searchWord));
     });
 
     // update state or empy results if no prompt
