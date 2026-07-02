@@ -12,7 +12,7 @@
 
 const API_URLS = {
   development: "http://localhost:8080/api",
-  production: "https://grocerylistrevival.onrender.com/api",
+  production: "https://api.guillaumejarry.com/api",
 };
 
 // Déterminer l'environnement
