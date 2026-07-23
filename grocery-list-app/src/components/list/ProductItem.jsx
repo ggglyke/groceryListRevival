@@ -1,38 +1,69 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import { FaPen, FaTimes, FaCheck } from "react-icons/fa";
+import { FaPen, FaTimes, FaCheck, FaLink, FaTag } from "react-icons/fa";
+
+// Extrait "domaine + path tronqué" d'une URL pour l'affichage
+const formatLink = (url) => {
+  try {
+    const { hostname, pathname } = new URL(url);
+    const path = pathname === "/" ? "" : pathname;
+    const full = `${hostname}${path}`;
+    return full.length > 40 ? `${full.slice(0, 40)}…` : full;
+  } catch {
+    return url;
+  }
+};
 
 export default function ProductItem({
   product,
   isChecked,
   isCustomProduct,
+  showLinkPrice = false,
   onToggleCheck,
   onRenameProduct,
   onRemoveProduct,
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
+  const [editLink, setEditLink] = useState("");
+  const [editPrice, setEditPrice] = useState("");
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleEdit = () => {
     // Get the current display name (customName or title)
     const currentName = product.customName || product.title;
     setEditValue(currentName);
+    setEditLink(product.link || "");
+    setEditPrice(product.price ?? "");
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditValue("");
+    setEditLink("");
+    setEditPrice("");
   };
 
   const handleSubmitEdit = async (e) => {
     e.preventDefault();
     if (!editValue.trim()) return;
 
-    await onRenameProduct(product._id, editValue, isCustomProduct);
+    await onRenameProduct(
+      product._id,
+      editValue,
+      isCustomProduct,
+      showLinkPrice
+        ? {
+            link: editLink.trim() || undefined,
+            price: editPrice !== "" ? Number(editPrice) : undefined,
+          }
+        : {}
+    );
     setIsEditing(false);
     setEditValue("");
+    setEditLink("");
+    setEditPrice("");
   };
 
   const handleDelete = () => {
@@ -73,15 +104,45 @@ export default function ProductItem({
           onSubmit={handleSubmitEdit}
           className="my-2 d-flex justify-content-between flex-fill"
         >
-          <Form.Group className="flex-fill" controlId="changeProductName">
-            <Form.Control
-              type="text"
-              autoFocus
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </Form.Group>
+          <div className="flex-fill">
+            <Form.Group className="mb-2" controlId="changeProductName">
+              <Form.Control
+                type="text"
+                autoFocus
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                placeholder="Nom"
+              />
+            </Form.Group>
+            {showLinkPrice && (
+              <div className="d-flex gap-2">
+                <Form.Group className="flex-fill" controlId="changeProductLink">
+                  <Form.Control
+                    type="url"
+                    value={editLink}
+                    onChange={(e) => setEditLink(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Lien (optionnel)"
+                  />
+                </Form.Group>
+                <Form.Group
+                  controlId="changeProductPrice"
+                  style={{ maxWidth: "110px" }}
+                >
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    placeholder="Prix €"
+                  />
+                </Form.Group>
+              </div>
+            )}
+          </div>
 
           <div className="ms-2 d-flex align-items-center">
             <button type="submit" className="btn btn-primary btn-sm me-2">
@@ -98,13 +159,42 @@ export default function ProductItem({
         </Form>
       ) : (
         <>
-          <div className="d-flex align-items-center flex-grow-1">
+          <div
+            className="d-flex align-items-center flex-grow-1"
+            style={{ minWidth: 0 }}
+          >
             <div className="check-area d-flex" onClick={handleCheck}>
               <div className="tick"></div>
             </div>
-            <span className="product-title">{displayName}</span>
+            <div className="d-flex flex-column" style={{ minWidth: 0 }}>
+              <span className="product-title" title={displayName}>
+                {displayName}
+              </span>
+              {showLinkPrice && (product.link || typeof product.price === "number") && (
+                <div className="d-flex align-items-center mt-1">
+                  {typeof product.price === "number" && (
+                    <span className="product-price text-muted text-small me-2">
+                      <FaTag className="me-1" />
+                      {product.price.toFixed(2).replace(".", ",")}€
+                    </span>
+                  )}
+                  {product.link && (
+                    <a
+                      href={product.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="product-link text-small"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <FaLink className="me-1" />
+                      {formatLink(product.link)}
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="d-flex">
+          <div className="d-flex align-items-center">
             <div className="icon-container edit" onClick={handleEdit}>
               <FaPen />
             </div>

@@ -1,6 +1,8 @@
 import React from "react";
+import Dropdown from "react-bootstrap/Dropdown";
 
 import EmptyState from "../ui/EmptyState";
+import TooltipComponent from "../reusable/tooltip.component";
 
 export default function EmptyLists({ createList }) {
   return (
@@ -11,9 +13,36 @@ export default function EmptyLists({ createList }) {
 
           <h1 className="mt-5">C'est bien vide par ici.</h1>
           <p>Et si on commençait par...</p>
-          <button onClick={createList} className="btn btn-primary">
-            Ajouter une liste
-          </button>
+          <Dropdown>
+            <Dropdown.Toggle variant="primary" id="dropdown-basic">
+              Créer une liste
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <Dropdown.Item onClick={() => createList(false)}>
+                Liste simple
+                <TooltipComponent
+                  config={{ size: ".75em" }}
+                  text={[
+                    "Des éléments à cocher, c'est tout.",
+                    <br />,
+                    " Idéal pour une TODO list.",
+                  ]}
+                />
+              </Dropdown.Item>
+              <Dropdown.Item onClick={() => createList(true)}>
+                Liste avancée
+                <TooltipComponent
+                  config={{ size: ".75em" }}
+                  text={[
+                    "Une liste que vous attribuez à un magasin, avec des rayons dans un ordre que vous définissez. ",
+                    <br />,
+                    " Idéal pour une liste de courses.",
+                  ]}
+                />
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
         </div>
       </div>
     </div>

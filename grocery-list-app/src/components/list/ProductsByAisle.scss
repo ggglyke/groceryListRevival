@@ -32,3 +32,27 @@
     background-color: rgba(13, 110, 253, 0.05);
   }
 }
+
+.product-title {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  background-color: #e7f1ff;
+  color: #0a3d91;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  text-decoration: none;
+
+  &:hover {
+    color: #0a3d91;
+    background-color: #d6e6ff;
+  }
+}

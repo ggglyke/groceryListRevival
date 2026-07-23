@@ -29,6 +29,7 @@ export default function List({ userId }) {
     deleteAllProducts,
     updateListTitle,
     changeMagasin,
+    changeListType,
     deleteList,
   } = useList({ listId: id, userId });
 
@@ -39,6 +40,9 @@ export default function List({ userId }) {
   // Track if we've already celebrated (to avoid multiple confetti on re-renders)
   const hasCelebratedRef = useRef(false);
   const celebrationTextRef = useRef(null);
+  // Track previous unchecked count to only celebrate on a 1 -> 0 transition
+  // (i.e. the user just checked the last product), not on initial load
+  const prevUncheckedCountRef = useRef(null);
 
   // Trigger confetti when all products are checked
   useEffect(() => {
@@ -58,9 +62,17 @@ export default function List({ userId }) {
     const totalProducts = allProductIds.length;
     const checkedCount = validCheckedIds.length;
     const uncheckedCount = totalProducts - checkedCount;
+    const previousUncheckedCount = prevUncheckedCountRef.current;
+    prevUncheckedCountRef.current = uncheckedCount;
 
-    // All products checked (no unchecked products remain) AND there's at least 1 product AND we haven't celebrated yet
-    if (totalProducts > 0 && uncheckedCount === 0 && !hasCelebratedRef.current) {
+    // Célébrer uniquement lors de la transition "il restait des produits non cochés" -> "il n'en reste plus"
+    // (pas au chargement initial d'une liste déjà vide/complète)
+    if (
+      totalProducts > 0 &&
+      uncheckedCount === 0 &&
+      previousUncheckedCount > 0 &&
+      !hasCelebratedRef.current
+    ) {
       hasCelebratedRef.current = true;
 
       // Wait a bit for the celebration text to render, then trigger confetti
@@ -130,6 +142,7 @@ export default function List({ userId }) {
         magasins={magasins}
         updateListTitle={updateListTitle}
         changeMagasin={changeMagasin}
+        changeListType={changeListType}
         onDeleteCheckedProducts={() => setShowDeleteCheckedModal(true)}
         onDeleteAllProducts={() => setShowDeleteAllModal(true)}
         onDeleteList={() => setShowDeleteListModal(true)}

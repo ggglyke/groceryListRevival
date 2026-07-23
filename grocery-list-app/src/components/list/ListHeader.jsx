@@ -9,12 +9,15 @@ export default function ListHeader({
   magasins,
   updateListTitle,
   changeMagasin,
+  changeListType,
   onDeleteCheckedProducts,
   onDeleteAllProducts,
   onDeleteList,
 }) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(list?.title || "");
+
+  const hasAisles = list?.hasAisles !== false;
 
   const handleSubmitTitle = async (e) => {
     e.preventDefault();
@@ -68,7 +71,12 @@ export default function ListHeader({
         </Form>
       ) : (
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h1>{list?.title}</h1>
+          <div>
+            <h1 className="mb-0">{list?.title}</h1>
+            <span className="text-small text-muted">
+              {hasAisles ? "Liste avancée" : "Liste simple"}
+            </span>
+          </div>
           <Dropdown>
             <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
               <FaCog />
@@ -92,6 +100,12 @@ export default function ListHeader({
                 Renommer
               </Dropdown.Item>
 
+              <Dropdown.Item onClick={() => changeListType(!hasAisles)}>
+                {hasAisles
+                  ? "Passer en liste simple"
+                  : "Passer en liste avancée"}
+              </Dropdown.Item>
+
               <Dropdown.Divider />
 
               <Dropdown.Item onClick={onDeleteList}>
@@ -105,28 +119,30 @@ export default function ListHeader({
         </div>
       )}
 
-      {/* Sélection du magasin */}
-      <div className="my-4">
-        <Form>
-          <Form.Group controlId="selectShop">
-            <Form.Label className="fw-bold">Magasin :</Form.Label>
-            <Form.Select
-              aria-label="Sélectionner un magasin"
-              value={list?.magasin?._id || list?.magasin || ""}
-              onChange={handleChangeMagasin}
-            >
-              {magasins.map((magasin) => (
-                <option value={magasin._id} key={magasin._id}>
-                  {magasin.title}
-                </option>
-              ))}
-            </Form.Select>
-            <span className="text-small muted ps-2">
-              <Link to="/magasins">Gérer les magasins</Link>
-            </span>
-          </Form.Group>
-        </Form>
-      </div>
+      {/* Sélection du magasin (liste avancée uniquement) */}
+      {hasAisles && (
+        <div className="my-4">
+          <Form>
+            <Form.Group controlId="selectShop">
+              <Form.Label className="fw-bold">Magasin :</Form.Label>
+              <Form.Select
+                aria-label="Sélectionner un magasin"
+                value={list?.magasin?._id || list?.magasin || ""}
+                onChange={handleChangeMagasin}
+              >
+                {magasins.map((magasin) => (
+                  <option value={magasin._id} key={magasin._id}>
+                    {magasin.title}
+                  </option>
+                ))}
+              </Form.Select>
+              <span className="text-small muted ps-2">
+                <Link to="/magasins">Gérer les magasins</Link>
+              </span>
+            </Form.Group>
+          </Form>
+        </div>
+      )}
     </>
   );
 }

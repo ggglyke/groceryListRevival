@@ -8,7 +8,7 @@ const Magasin = db.magasins;
 exports.create = async (req, res) => {
   // Create new list
   try {
-    const { title, magasin } = req.body;
+    const { title, magasin, hasAisles } = req.body;
     // Use req.userId from requireAuth middleware
     const objectIdUserId = new mongoose.Types.ObjectId(req.userId);
     const objectIdMagasinId = magasin
@@ -18,6 +18,7 @@ exports.create = async (req, res) => {
       user: objectIdUserId,
       title,
       magasin: objectIdMagasinId,
+      hasAisles: hasAisles !== false,
     });
     return res.status(200).json({ list: list._id, created: true });
   } catch (err) {

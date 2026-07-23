@@ -4,7 +4,7 @@ module.exports = (mongoose) => {
     mongoose.Schema(
       {
         title: String,
-        hasAisles: Boolean,
+        hasAisles: { type: Boolean, default: true },
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
@@ -25,6 +25,8 @@ module.exports = (mongoose) => {
           {
             title: String,
             rayon: { type: mongoose.Schema.Types.ObjectId, ref: "rayon" },
+            link: String,
+            price: Number,
           },
         ],
         productCustomNames: {

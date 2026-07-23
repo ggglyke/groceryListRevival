@@ -39,25 +39,27 @@ export default function useLists({ userId }) {
   }, []);
 
   const createList = useCallback(
-    async (e) => {
-      e?.preventDefault();
+    async (hasAisles = true) => {
       try {
         setIsLoading(true);
 
         const date = new Date().toLocaleString("fr-FR");
         const listData = {
           title: `Liste du ${date}`,
+          hasAisles,
         };
 
-        try {
-          const magasinResponse = await MagasinDataService.findOneByCondition({
-            default: true,
-          });
-          if (magasinResponse?.data?._id) {
-            listData.magasin = magasinResponse.data._id;
+        if (hasAisles) {
+          try {
+            const magasinResponse = await MagasinDataService.findOneByCondition({
+              default: true,
+            });
+            if (magasinResponse?.data?._id) {
+              listData.magasin = magasinResponse.data._id;
+            }
+          } catch (magasinErr) {
+            console.error("pas de magasin par défaut, on continue  ");
           }
-        } catch (magasinErr) {
-          console.error("pas de magasin par défaut, on continue  ");
         }
 
         const result = await ListDataService.create(listData);

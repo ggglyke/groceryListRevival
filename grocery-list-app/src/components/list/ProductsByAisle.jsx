@@ -29,6 +29,7 @@ export default function ProductsByAisle({
   onAddProductToList,
   celebrationTextRef,
 }) {
+  const hasAisles = list?.hasAisles !== false;
   const checkedProducts = list?.checkedProducts || [];
 
   // Obtenir tous les produits (réguliers + customs)
@@ -82,6 +83,78 @@ export default function ProductsByAisle({
     )
     .sort((a, b) => (b.times_added || 0) - (a.times_added || 0))
     .slice(0, 12);
+
+  if (!hasAisles) {
+    const uncheckedProducts = allProducts.filter(
+      (p) => !checkedProducts.includes(p._id)
+    );
+
+    return (
+      <>
+        {uncheckedProducts.length > 0 && (
+          <div className="mb-4">
+            <ul className="list-group">
+              {uncheckedProducts.map((product) => (
+                <ProductItem
+                  key={product._id}
+                  product={product}
+                  isChecked={false}
+                  isCustomProduct={
+                    list?.customProducts?.some(
+                      (cp) => cp._id === product._id
+                    ) || false
+                  }
+                  showLinkPrice
+                  onToggleCheck={onToggleCheck}
+                  onRenameProduct={onRenameProduct}
+                  onRemoveProduct={onRemoveProduct}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {allProducts.length === 0 && (
+          <p className="text-muted text-center mt-4">
+            Aucun élément dans cette liste
+          </p>
+        )}
+
+        {celebrationMessage && (
+          <p
+            ref={celebrationTextRef}
+            className="text-muted text-center mt-4 mb-4"
+          >
+            {celebrationMessage}
+          </p>
+        )}
+
+        {checkedProductsList.length > 0 && (
+          <div className="mt-4">
+            <p className="fw-bold text-muted mb-2">Cochés</p>
+            <ul className="list-group">
+              {checkedProductsList.map((product) => (
+                <ProductItem
+                  key={product._id}
+                  product={product}
+                  isChecked={true}
+                  isCustomProduct={
+                    list?.customProducts?.some(
+                      (cp) => cp._id === product._id
+                    ) || false
+                  }
+                  showLinkPrice
+                  onToggleCheck={onToggleCheck}
+                  onRenameProduct={onRenameProduct}
+                  onRemoveProduct={onRemoveProduct}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>

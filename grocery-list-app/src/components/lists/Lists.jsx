@@ -21,11 +21,6 @@ export default function Lists({ userId }) {
           breadcrumbs={[{ label: "Listes", path: "/lists" }]}
           title="Toutes vos listes"
           error={error}
-          headerActions={
-            <button onClick={createList} className="btn btn-primary">
-              Ajouter
-            </button>
-          }
         >
           <div className="list-group">
             {lists.map((list) => (
@@ -40,7 +35,7 @@ export default function Lists({ userId }) {
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
-                <Dropdown.Item href="#/action-1">
+                <Dropdown.Item onClick={() => createList(false)}>
                   Liste simple
                   <TooltipComponent
                     config={{ size: ".75em" }}
@@ -51,7 +46,7 @@ export default function Lists({ userId }) {
                     ]}
                   />
                 </Dropdown.Item>
-                <Dropdown.Item href="#/action-2">
+                <Dropdown.Item onClick={() => createList(true)}>
                   Liste avancée
                   <TooltipComponent
                     config={{ size: ".75em" }}

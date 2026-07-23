@@ -47,6 +47,8 @@ export default function useList({ listId, userId }) {
         const customProduct = {
           title: cp.title,
           rayon: typeof cp.rayon === "string" ? cp.rayon : cp.rayon?._id,
+          link: cp.link || undefined,
+          price: cp.price ?? undefined,
         };
         // Only include _id if it's not a temporary ID
         if (cp._id && !cp._id.startsWith("temp-")) {
@@ -378,10 +380,11 @@ export default function useList({ listId, userId }) {
     [list, listId, userId, refetchList, prepareListForBackend, magasins, aisles, orderProducts, productsToDisplay]
   );
 
-  // Rename product (add customName)
+  // Rename product (add customName), and for custom products optionally update link/price
   const renameProduct = useCallback(
-    async (productId, newName, isCustomProduct = false) => {
+    async (productId, newName, isCustomProduct = false, extra = {}) => {
       if (!list) return;
+      const { link, price } = extra;
 
       try {
         let updatedList;
@@ -389,11 +392,13 @@ export default function useList({ listId, userId }) {
         // Optimistic update - utiliser la forme fonctionnelle
         setList((prevList) => {
           if (isCustomProduct) {
-            // Update custom product title
+            // Update custom product title (and link/price if provided)
             updatedList = {
               ...prevList,
               customProducts: prevList.customProducts.map((p) =>
-                p._id === productId ? { ...p, title: newName } : p
+                p._id === productId
+                  ? { ...p, title: newName, link, price }
+                  : p
               ),
             };
           } else {
@@ -535,7 +540,8 @@ export default function useList({ listId, userId }) {
 
   // Add custom product to list (with option to also add to database)
   const addCustomProductToList = useCallback(
-    async (productTitle, rayonId, alsoAddToDatabase = false) => {
+    async (productTitle, rayonId, alsoAddToDatabase = false, extra = {}) => {
+      const { link, price } = extra;
       if (!list) return;
 
       try {
@@ -592,6 +598,8 @@ export default function useList({ listId, userId }) {
             _id: tempId,
             title: productTitle,
             rayon: rayonId,
+            link: link || undefined,
+            price: price ?? undefined,
           };
 
           // Optimistic update
@@ -786,6 +794,41 @@ export default function useList({ listId, userId }) {
     [list, listId, refetchList, prepareListForBackend]
   );
 
+  // Change list type (hasAisles: true = liste avancée/BDD, false = liste libre)
+  const changeListType = useCallback(
+    async (hasAisles) => {
+      if (!list) return;
+
+      try {
+        const updatedList = {
+          ...list,
+          hasAisles,
+        };
+
+        // Optimistic update
+        setList(updatedList);
+
+        // Backend update
+        await ListDataService.update(
+          listId,
+          prepareListForBackend(updatedList)
+        );
+
+        toast.success("Type de liste changé", {
+          position: "top-right",
+        });
+      } catch (e) {
+        console.error("Error changing list type:", e);
+        toast.error("Erreur lors du changement de type de liste", {
+          position: "top-right",
+        });
+        // Revert on error
+        await refetchList();
+      }
+    },
+    [list, listId, refetchList, prepareListForBackend]
+  );
+
   // Delete list
   const deleteList = useCallback(async () => {
     try {
@@ -826,6 +869,7 @@ export default function useList({ listId, userId }) {
     // List Actions
     updateListTitle,
     changeMagasin,
+    changeListType,
     deleteList,
     refetchList,
 

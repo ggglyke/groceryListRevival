@@ -18,6 +18,7 @@ const createListSchema = Joi.object({
     magasin: objectIdSchema.allow("", null).messages({
       "string.pattern.base": "L'ID du magasin est invalide",
     }),
+    hasAisles: Joi.boolean(),
   }).unknown(true).required(),
   params: Joi.object({}),
   query: Joi.object({}),
