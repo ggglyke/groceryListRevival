@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import { FaPen, FaTimes, FaCheck, FaLink, FaTag } from "react-icons/fa";
+import { FaPen, FaTimes, FaCheck, FaLink } from "react-icons/fa";
 
-// Extrait "domaine + path tronqué" d'une URL pour l'affichage
+// Extrait le domaine (sans "www.") d'une URL pour l'affichage
 const formatLink = (url) => {
   try {
-    const { hostname, pathname } = new URL(url);
-    const path = pathname === "/" ? "" : pathname;
-    const full = `${hostname}${path}`;
-    return full.length > 40 ? `${full.slice(0, 40)}…` : full;
+    const { hostname } = new URL(url);
+    return hostname.replace(/^www\./, "");
   } catch {
     return url;
   }
@@ -172,23 +170,22 @@ export default function ProductItem({
               </span>
               {showLinkPrice && (product.link || typeof product.price === "number") && (
                 <div className="d-flex align-items-center mt-1">
-                  {typeof product.price === "number" && (
-                    <span className="product-price text-muted text-small me-2">
-                      <FaTag className="me-1" />
-                      {product.price.toFixed(2).replace(".", ",")}€
-                    </span>
-                  )}
                   {product.link && (
                     <a
                       href={product.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="product-link text-small"
+                      className="product-link text-small me-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <FaLink className="me-1" />
                       {formatLink(product.link)}
                     </a>
+                  )}
+                  {typeof product.price === "number" && (
+                    <span className="product-price text-muted text-small">
+                      {product.price.toFixed(2).replace(".", ",")}€
+                    </span>
                   )}
                 </div>
               )}

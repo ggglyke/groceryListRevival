@@ -64,14 +64,6 @@ export default function ProductsByAisle({
     return null;
   }, [allProducts, checkedProducts]);
 
-  // Filtrer les produits non cochés dans chaque rayon
-  const rayonsWithUncheckedProducts = rayonList
-    .map((rayon) => ({
-      ...rayon,
-      products: rayon.products.filter((p) => !checkedProducts.includes(p._id)),
-    }))
-    .filter((rayon) => rayon.products.length > 0);
-
   // Suggestions : produits de la DB qui ne sont pas dans la liste
   // (peu importe s'ils sont cochés ou non)
   // Limité à 12 produits
@@ -155,6 +147,15 @@ export default function ProductsByAisle({
       </>
     );
   }
+
+  // Filtrer les produits non cochés dans chaque rayon
+  const rayonsWithUncheckedProducts = rayonList
+    .filter((rayon) => Array.isArray(rayon?.products))
+    .map((rayon) => ({
+      ...rayon,
+      products: rayon.products.filter((p) => !checkedProducts.includes(p._id)),
+    }))
+    .filter((rayon) => rayon.products.length > 0);
 
   return (
     <>

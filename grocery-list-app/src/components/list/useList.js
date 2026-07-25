@@ -141,7 +141,7 @@ export default function useList({ listId, userId }) {
   // Order products by aisle based on magasin.rayonsOrder
   const orderProducts = useCallback((products, magasin, aislesData) => {
     if (!magasin || !magasin.rayonsOrder || !aislesData) {
-      return products;
+      return [];
     }
 
     const rayonsOrder = magasin.rayonsOrder;
