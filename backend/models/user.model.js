@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true, // Cette option ajoute les horodatages createdAt et updatedAt

@@ -5,8 +5,10 @@ if (!process.env.JWT_SECRET) {
 }
 
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const User = require("../models/user.model");
 const { validatePassword } = require("../utils/passwordValidator");
+const { sendPasswordResetEmail } = require("../services/email.service");
 
 const maxAge = 30 * 24 * 60 * 60; // 30 jours
 
@@ -96,6 +98,74 @@ exports.login = async (req, res, next) => {
     return res.status(401).json({
       errors,
       logged: false,
+    });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  const genericResponse = {
+    message: "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
+  };
+
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (user) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 heure
+      await user.save();
+
+      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+      await sendPasswordResetEmail(user.email, user.username, resetUrl);
+    }
+
+    return res.status(200).json(genericResponse);
+  } catch (err) {
+    console.error("Erreur forgotPassword:", err);
+    return res.status(200).json(genericResponse);
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({
+        errors: { password: passwordValidation.errors.join(", ") },
+        reset: false,
+      });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        errors: { token: "Lien invalide ou expiré, veuillez refaire une demande" },
+        reset: false,
+      });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({ reset: true });
+  } catch (err) {
+    console.error("Erreur resetPassword:", err);
+    return res.status(400).json({
+      errors: { token: "Une erreur est survenue, veuillez réessayer" },
+      reset: false,
     });
   }
 };

@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import UserDataService from "../services/user.service";
+import PasswordInput from "./reusable/PasswordInput";
 import "../scss/login-register.scss";
 
 export default function Login() {
@@ -17,7 +18,7 @@ export default function Login() {
 
   const query = useMemo(
     () => new URLSearchParams(location.search),
-    [location.search]
+    [location.search],
   );
   const isAccountCreated = query.get("accountCreated") === "true";
 
@@ -100,24 +101,27 @@ export default function Login() {
               <Form.Label>
                 Mot de passe <span className="text-danger">*</span>
               </Form.Label>
-              <Form.Control
-                type="password"
+              <PasswordInput
+                controlId="password"
                 placeholder="Mot de passe"
                 name="password"
-                values={values.password}
+                value={values.password}
                 onChange={(e) =>
                   setValues({ ...values, [e.target.name]: e.target.value })
                 }
               />
             </Form.Group>
-            <div className="d-grid gap-2">
-              <Button variant="primary" type="submit" className="my-4">
+            <div className="d-grid gap-1">
+              <Button variant="primary" type="submit" className="mt-4 mb-2">
                 Se connecter
               </Button>
             </div>
           </Form>
           <Form.Text muted>
-            <p className="mt-2 text-center">
+            <p className="text-center">
+              <Link to="/forgot-password">Mot de passe oublié ?</Link>
+            </p>
+            <p className="mt-4 text-center">
               Pas encore de compte ? <Link to="/register">Inscrivez-vous.</Link>
             </p>
           </Form.Text>

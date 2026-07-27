@@ -2,11 +2,14 @@ const { checkUser } = require("../middlewares/auth.middleware.js");
 const {
   loginLimiter,
   registerLimiter,
+  forgotPasswordLimiter,
 } = require("../middlewares/rateLimiter.middleware.js");
 const validate = require("../middlewares/validate.middleware.js");
 const {
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } = require("../validators/user.validator.js");
 
 module.exports = (app) => {
@@ -27,6 +30,12 @@ module.exports = (app) => {
 
   // Vérification simple (répond toujours JSON 200)
   router.get("/verify", users.verify);
+
+  // Demande de réinitialisation de mot de passe (avec rate limiting + validation)
+  router.post("/forgot-password", forgotPasswordLimiter, validate(forgotPasswordSchema), users.forgotPassword);
+
+  // Réinitialisation du mot de passe (avec validation)
+  router.post("/reset-password", validate(resetPasswordSchema), users.resetPassword);
 
   app.use("/api/users", router);
 };

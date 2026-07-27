@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import UserDataService from "../services/user.service";
 import MagasinDataService from "../services/magasin.service";
 import AisleDataService from "../services/aisle.service";
+import PasswordInput from "./reusable/PasswordInput";
 
 import rayonsData from "../data/rayons.data";
 
@@ -238,11 +239,12 @@ export default function Register() {
               <Form.Label>
                 Mot de passe <span className="text-danger">*</span>
               </Form.Label>
-              <Form.Control
+              <PasswordInput
                 required
-                type="password"
+                controlId="password"
                 placeholder="Mot de passe"
                 name="password"
+                value={userData.password}
                 onChange={(e) =>
                   setUserData({ ...userData, [e.target.name]: e.target.value })
                 }

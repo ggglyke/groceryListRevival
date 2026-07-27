@@ -18,9 +18,18 @@ import Home from "./components/home.component";
 import PrivateRoute from "./components/privateRoute.component";
 import Login from "./components/login.component";
 import Register from "./components/register.component";
+import ForgotPassword from "./components/forgot-password.component";
+import ResetPassword from "./components/reset-password.component";
 
 // Routes publiques qui ne nécessitent pas d'attendre verify()
-const PUBLIC_ROUTES = ["/", "/login", "/register", "/list-testing"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/login",
+  "/register",
+  "/list-testing",
+  "/forgot-password",
+  "/reset-password",
+];
 
 export default function App() {
   const { loading, authenticated, verify, user } = useAuth();
@@ -46,6 +55,8 @@ export default function App() {
       <Routes>
         <Route path={"/login/:accountCreated?"} element={<Login />} />
         <Route path={"/register"} element={<Register />} />
+        <Route path={"/forgot-password"} element={<ForgotPassword />} />
+        <Route path={"/reset-password"} element={<ResetPassword />} />
         <Route path={"/list-testing"} element={<ListTest />} />
         <Route path={"/"} element={<Home />} />
 

@@ -25,3 +25,16 @@ body {
     object-fit: cover;
   }
 }
+
+.password-toggle-btn {
+  border-color: #ced4da;
+  color: #6c757d;
+
+  &:hover,
+  &:focus,
+  &:active {
+    border-color: #ced4da;
+    background-color: transparent;
+    color: #6c757d;
+  }
+}
