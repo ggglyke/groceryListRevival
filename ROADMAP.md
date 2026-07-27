@@ -17,7 +17,7 @@
 
 **Fait** (commit `d3ec77b`) : flux complet forgot/reset password. Modèle `User` étoffé (`resetPasswordToken`, `resetPasswordExpires`), token aléatoire haché SHA-256 en DB avec expiration 1h, service d'envoi d'email (`backend/services/email.service.js`, Nodemailer + SMTP), routes `POST /api/users/forgot-password` et `POST /api/users/reset-password` (rate limiting + validation Joi), pages frontend `/forgot-password` et `/reset-password`, lien depuis l'écran de login. Bonus : bouton "œil" pour afficher/masquer le mot de passe sur les champs concernés (login, register, reset).
 
-Reste à faire côté ops : mettre à jour `backend/.env` sur le VPS avec les variables SMTP (`FRONTEND_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`) et redémarrer le process — non fait automatiquement, cf. point 5 ci-dessous.
+Variables SMTP configurées sur le VPS, envoi d'email fonctionnel en production.
 
 ## 3. Commande vocale pour ajouter des éléments aux listes (long terme)
 
@@ -53,3 +53,12 @@ Autre lacune actuelle : le magasin créé à l'inscription n'a pas son `rayonsOr
 **Scope volontairement limité au backend** — le frontend (hébergement Apache mutualisé séparé, `guillaumejarry.com/groceryListRevival/`) reste en déploiement manuel.
 
 **Reste à faire si besoin** : documenter le process dans un `DEPLOY.md` (non fait, jugé optionnel vu que le workflow est auto-descriptif).
+
+## 6. Messages d'erreur précis et règles de mot de passe visibles ✅ Traité
+
+**Fait** (commit `f64f2e6`) : le middleware de validation Joi (`validate.middleware.js`) et les contrôleurs (`user.controller.js`) renvoyaient deux formats d'erreur différents — un tableau `[{ field, message }]` côté Joi, un objet `{ password: "..." }` côté contrôleur — que le frontend ne savait déstructurer que dans un seul cas. Résultat : un mot de passe trop court (validation Joi, `min(8)`) affichait le message générique "Une erreur est survenue, réessayez" au lieu du vrai message, et sur la page d'inscription aucun toast ne s'affichait du tout.
+
+- Nouveau helper `grocery-list-app/src/utils/extractPasswordError.js` : gère les deux formats de réponse d'erreur.
+- `register.component.jsx` et `reset-password.component.jsx` : utilisent ce helper pour afficher le bon message.
+- Nouveau composant `grocery-list-app/src/components/reusable/PasswordRules.jsx` : checklist en temps réel des règles de mot de passe (8 caractères, majuscule, minuscule, chiffre, caractère spécial), état neutre tant que le champ est vide, rouge/vert dynamique ensuite. Affiché sur les pages register et reset-password (sous le champ mot de passe, avant le bouton de validation).
+- `backend/utils/passwordValidator.js` : la règle de caractère spécial est passée d'une liste blanche de symboles (qui excluait des caractères valides comme `§` ou `£`) à `[^a-zA-Z0-9]` (tout caractère non alphanumérique accepté), plus simple et exhaustif.
