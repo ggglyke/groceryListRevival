@@ -60,6 +60,7 @@
   "devDependencies": {
     "@babel/plugin-transform-private-property-in-object": "^7.23.3",
     "@babel/preset-env": "^7.22.3",
+    "baseline-browser-mapping": "^2.11.4",
     "dotenv": "^16.0.3",
     "sass": "^1.93.2"
   }

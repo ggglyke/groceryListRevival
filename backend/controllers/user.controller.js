@@ -6,7 +6,10 @@ if (!process.env.JWT_SECRET) {
 
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const db = require("../models");
 const User = require("../models/user.model");
+const { magasins: Magasin, rayons: Rayon } = db;
+const defaultRayons = require("../data/defaultRayons.data");
 const { validatePassword } = require("../utils/passwordValidator");
 const { sendPasswordResetEmail, sendVerificationEmail } = require("../services/email.service");
 const { getFrontendUrl } = require("../utils/frontendUrl");
@@ -71,6 +74,18 @@ exports.register = async (req, res) => {
       emailVerificationToken: hashedVerificationToken,
       emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 heures
     });
+
+    // Magasin et rayons par défaut (anciennement créés côté frontend juste après
+    // l'inscription, mais ces routes nécessitent une auth que register ne fournit
+    // pas — créés ici pour que le compte soit prêt à l'emploi dès sa vérification)
+    await Magasin.create({
+      title: "Mon magasin par défaut",
+      user: user._id,
+      default: true,
+    });
+    await Rayon.insertMany(
+      defaultRayons.map((rayon) => ({ ...rayon, user: user._id }))
+    );
 
     const verifyUrl = `${getFrontendUrl(req)}/verify-email?token=${verificationToken}`;
     await sendVerificationEmail(user.email, user.username, verifyUrl);

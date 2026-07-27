@@ -5,13 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext";
 import UserDataService from "../services/user.service";
-import MagasinDataService from "../services/magasin.service";
-import AisleDataService from "../services/aisle.service";
 import PasswordInput from "./reusable/PasswordInput";
 import PasswordRules from "./reusable/PasswordRules";
 import extractPasswordError from "../utils/extractPasswordError";
-
-import rayonsData from "../data/rayons.data";
 
 import "../scss/login-register.scss";
 
@@ -56,154 +52,24 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      // register user in database
-      const registeredUserData = await UserDataService.register(
+      const { data } = await UserDataService.register(
         { ...userData },
         { withCredentials: true }
       );
-      if (registeredUserData) {
-        console.log("response", registeredUserData);
-        // handle response
-        handleRegisteredUserData(registeredUserData.data);
-      }
-    } catch (err) {
-      console.error("handleSubmit error : ", err);
-    }
-  };
-
-  const handleRegisteredUserData = async (registeredUserData) => {
-    try {
-      if (registeredUserData.errors) {
-        handleErrors(registeredUserData.errors);
-      } else {
-        // create default Magasin
-        const dataDefaultMagasin = await createDefaultMagasin(
-          registeredUserData.user
-        );
-        if (dataDefaultMagasin) {
-          handleDefaultMagasinData(dataDefaultMagasin, registeredUserData.user);
-        }
-      }
-    } catch (err) {
-      console.error("handleRegisteredUserData : ", err);
-    }
-  };
-
-  const handleDefaultMagasinData = async (dataDefaultMagasin, user) => {
-    console.log("handleDefaultMagasinData user : ", user);
-    try {
-      if (dataDefaultMagasin.errors) {
-        handleErrors(dataDefaultMagasin.errors);
-      } else {
-        const defaultRayonData = rayonsData.map((item) => ({
-          title: item.title,
-          user: user,
-          isDefault: item.isDefault,
-        }));
-        const dataDefaultAisles = await AisleDataService.insertMany(
-          defaultRayonData,
-          { withCredentials: true }
-        );
-        if (dataDefaultAisles) {
-          handledefaultAislesData(dataDefaultAisles, user);
-        }
-      }
-    } catch (err) {
-      console.error("handleDefaultMagasinData : ", err);
-    }
-  };
-
-  const handledefaultAislesData = (dataDefaultAisles, user) => {
-    try {
-      if (dataDefaultAisles.errors) {
-        handleErrors(dataDefaultAisles.errors);
+      if (data?.errors) {
+        handleErrors(data.errors);
       } else {
         setRegistered(true);
       }
     } catch (err) {
-      console.error("handledefaultAislesData : ", err);
+      if (err?.response?.data?.errors) {
+        handleErrors(err.response.data.errors);
+      } else {
+        console.error("handleSubmit error : ", err);
+        generateError("Erreur réseau, réessayez");
+      }
     }
   };
-
-  const createDefaultMagasin = async (user) => {
-    console.log("createDefaultMagasin", user);
-    return await MagasinDataService.create(
-      {
-        title: "Mon magasin par défaut",
-        user,
-        isDefault: true,
-      },
-      { withCredentials: true }
-    );
-  };
-
-  /*try {
-      const { data } = await UserDataService.register(
-        { ...values },
-        { withCredentials: true }
-      );
-      if (data) {
-        console.log("data newly registered user : ", data);
-        if (data.errors) {
-          const { username, email, password } = data.errors;
-          if (username) generateError(username);
-          else if (email) generateError(email);
-          else if (password) generateError(password);
-        } else {
-          // user created, create default magasin
-          try {
-            const { data: dataMagasin } = await MagasinDataService.create(
-              {
-                title: "Mon magasin par défaut",
-                user: data.user,
-                isDefault: true,
-              },
-              { withCredentials: true }
-            );
-            if (dataMagasin) {
-              console.log("dataMag :", dataMagasin);
-              if (dataMagasin.errors) {
-                const { title, user } = dataMagasin.errors;
-                if (title) generateError(title);
-                else if (user) generateError(user);
-              } else {
-                // user created, create default aisles
-                try {
-                  const newRayonsData = rayonsData.map((item) => ({
-                    title: item.title,
-                    user: data.user,
-                  }));
-                  const { data: dataAisles } =
-                    await AisleDataService.insertMany(newRayonsData, {
-                      withCredentials: true,
-                    });
-                  if (dataAisles) {
-                    console.log("dataAisles :", dataAisles);
-                    if (dataAisles.errors) {
-                      const { title, user } = dataAisles.errors;
-                      if (title) generateError(title);
-                      else if (user) generateError(user);
-                    } else {
-                      navigate("/login?accountCreated=true");
-                    }
-                  } else {
-                    console.log("pas dataAisles :(");
-                  }
-                } catch (err) {
-                  console.log(err);
-                }
-              }
-            } else {
-              console.log("pas dataMag :(");
-            }
-          } catch (err) {
-            console.log(err);
-          }
-        }
-      }
-    } catch (err) {
-      console.log(err);
-    }*/
 
   return (
     <div className="container ">
