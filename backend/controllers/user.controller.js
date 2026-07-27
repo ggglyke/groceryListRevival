@@ -9,6 +9,7 @@ const crypto = require("crypto");
 const User = require("../models/user.model");
 const { validatePassword } = require("../utils/passwordValidator");
 const { sendPasswordResetEmail, sendVerificationEmail } = require("../services/email.service");
+const { getFrontendUrl } = require("../utils/frontendUrl");
 
 const maxAge = 30 * 24 * 60 * 60; // 30 jours
 
@@ -71,7 +72,7 @@ exports.register = async (req, res) => {
       emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 heures
     });
 
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    const verifyUrl = `${getFrontendUrl(req)}/verify-email?token=${verificationToken}`;
     await sendVerificationEmail(user.email, user.username, verifyUrl);
 
     // Return format expected by frontend
@@ -143,7 +144,7 @@ exports.forgotPassword = async (req, res) => {
       user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 heure
       await user.save();
 
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+      const resetUrl = `${getFrontendUrl(req)}/reset-password?token=${token}`;
       await sendPasswordResetEmail(user.email, user.username, resetUrl);
     }
 
@@ -258,7 +259,7 @@ exports.resendVerification = async (req, res) => {
       user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 heures
       await user.save();
 
-      const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+      const verifyUrl = `${getFrontendUrl(req)}/verify-email?token=${token}`;
       await sendVerificationEmail(user.email, user.username, verifyUrl);
     }
 

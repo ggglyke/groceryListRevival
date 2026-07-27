@@ -1,17 +1,12 @@
 # Roadmap
 
-## 1. Vérification d'email des nouveaux inscrits
+## 1. Vérification d'email des nouveaux inscrits ✅ Traité
 
-**Contexte actuel** : l'inscription (`POST /api/users/register`) crée le compte immédiatement actif, sans aucune vérification d'adresse email. Aucun champ de vérification n'existe sur le modèle `User`, aucun service d'envoi d'email n'est installé.
+**Fait** (commit `af72955`) : flux complet de vérification. Modèle `User` étoffé (`isVerified`, `emailVerificationToken`, `emailVerificationExpires`), token haché SHA-256 envoyé à l'inscription (expiration 24h), login bloqué (403 + flag `unverified`) tant que le compte n'est pas vérifié, routes `GET /api/users/verify-email` et `POST /api/users/resend-verification` (rate limité, anti-énumération). Frontend : page `/verify-email`, `register.component.jsx` reste sur place avec message d'attente, `login.component.jsx` propose un bouton "Renvoyer l'email" si le compte est non vérifié.
 
-**Ce que ça implique :**
-- Modèle `User` (`backend/models/user.model.js`) : ajouter `isVerified` (Boolean, default false), `verificationToken`, `verificationTokenExpires`.
-- Choisir et intégrer un service d'envoi d'email (Resend, SendGrid, ou Nodemailer + SMTP existant) — aucun n'est installé actuellement.
-- `register` (`backend/controllers/user.controller.js`) : générer un token de vérification, créer le compte avec `isVerified: false`, envoyer l'email avec lien de confirmation.
-- Nouvelle route `GET /api/users/verify-email?token=...` : valide le token, passe `isVerified: true`.
-- Bloquer le login tant que `isVerified` est `false`, avec message explicite + route `POST /api/users/resend-verification`.
-- Frontend : page `/verify-email`, écran post-inscription "vérifiez votre boîte mail", gestion de l'erreur "compte non vérifié" au login.
-- Migration one-shot : marquer `isVerified: true` pour tous les comptes existants avant la mise en place (ne pas bloquer rétroactivement les utilisateurs actuels).
+Migration one-shot appliquée en prod : les 3 comptes existants ont été marqués `isVerified: true` (pas de vérification rétroactive).
+
+Bonus : les liens envoyés par email (vérification + reset password) pointent désormais vers l'origine réelle de la requête (`backend/utils/frontendUrl.js`, basé sur le header `Origin` validé contre l'allowlist CORS) — fonctionne aussi bien depuis `localhost:3000` que depuis la prod, avec fallback sur `FRONTEND_URL` si l'origine est absente/inconnue.
 
 ## 2. Récupération de mot de passe oublié ✅ Traité
 
@@ -62,3 +57,20 @@ Autre lacune actuelle : le magasin créé à l'inscription n'a pas son `rayonsOr
 - `register.component.jsx` et `reset-password.component.jsx` : utilisent ce helper pour afficher le bon message.
 - Nouveau composant `grocery-list-app/src/components/reusable/PasswordRules.jsx` : checklist en temps réel des règles de mot de passe (8 caractères, majuscule, minuscule, chiffre, caractère spécial), état neutre tant que le champ est vide, rouge/vert dynamique ensuite. Affiché sur les pages register et reset-password (sous le champ mot de passe, avant le bouton de validation).
 - `backend/utils/passwordValidator.js` : la règle de caractère spécial est passée d'une liste blanche de symboles (qui excluait des caractères valides comme `§` ou `£`) à `[^a-zA-Z0-9]` (tout caractère non alphanumérique accepté), plus simple et exhaustif.
+
+## 7. Page "Mon compte"
+
+**Contexte actuel** : le menu déroulant utilisateur (`grocery-list-app/src/components/reusable/navbar.component.js:77`) contient déjà un item "Mon compte", mais sans `onClick`/`href` — c'est un lien mort, aucune route ni page n'existe derrière.
+
+**Ce que ça implique, a minima :**
+- Nouvelle route `/account` (ou `/my-account`), protégée (dans le groupe `PrivateRoute` de `App.js`, pas publique).
+- Nouveau composant `account.component.jsx`, nouvelle route backend `GET /api/users/me` (ou réutiliser `req.userId` du middleware `requireAuth` existant) pour récupérer les infos du compte courant.
+- **Changement de mot de passe** (utilisateur déjà connecté, différent du flux "mot de passe oublié") : nouvelle route `POST /api/users/change-password` (ancien mot de passe + nouveau, `requireAuth`), réutilise `validatePassword` (`backend/utils/passwordValidator.js`) et l'affichage `PasswordRules`/`PasswordInput` déjà existants (mêmes composants que register/reset-password, cf. point 6).
+- **Suppression de compte** : nouvelle route `DELETE /api/users/me` (`requireAuth`), avec confirmation forte côté frontend (ex. retaper le mot de passe ou taper "SUPPRIMER"). Décision à trancher : suppression en cascade des données liées (listes, produits, rayons, magasins — tous ont un champ `user`, cf. point 4) ou conservation/anonymisation. Pense à invalider le cookie JWT et le cache `localStorage` (`AuthContext.jsx`) après suppression.
+
+**Suggestions de fonctionnalités additionnelles pour cette page** (à trancher selon besoin) :
+- Modifier le nom d'utilisateur (`username`) — actuellement non modifiable après inscription.
+- Modifier l'adresse email — implique de repasser par une vérification (réutilise le flux du point 1) avant de valider le changement, pour éviter qu'un compte se retrouve avec un email non vérifié.
+- Voir la date de création du compte (`createdAt`, déjà stocké via `timestamps: true` sur le modèle `User`, juste à afficher).
+- Exporter ses données (listes, produits) en JSON — utile avant une suppression de compte, ou simple demande de portabilité.
+- Résumé d'activité (nombre de listes, produits ajoutés) — cosmétique, faible priorité.
