@@ -46,17 +46,10 @@ Autre lacune actuelle : le magasin créé à l'inscription n'a pas son `rayonsOr
 - **Fix du lien magasin-rayons** : dans `createDefaultMagasin`/`handleDefaultMagasinData`, une fois les rayons créés, mettre à jour le magasin par défaut avec `rayonsOrder` = liste des `_id` des rayons créés (dans l'ordre souhaité), pour que le groupement par rayon fonctionne dès l'inscription (cf. `useList.js:143-145` — sans `magasin.rayonsOrder` rempli, `orderProducts` ne peut pas grouper, cf. le fix récent du crash `e.products undefined`).
 - Migration : cette évolution ne concerne que les **nouveaux** comptes ; ne touche pas aux comptes déjà inscrits (pas de rétroactivité nécessaire).
 
-## 5. Automatiser le déploiement du backend sur le VPS
+## 5. Automatiser le déploiement du backend sur le VPS ✅ Traité
 
-**Contexte actuel** : le déploiement backend est entièrement manuel — connexion SSH au VPS (`ubuntu@164.132.97.135`), `git pull`, configuration des variables d'env (`backend/.env`, non versionné), redémarrage du process Node sur le port 8080 (process manager pm2/systemd configuré directement sur le serveur, hors du repo, non documenté). Aucun CI/CD n'existe (le seul workflow GitHub Actions, `keep-alive.yml`, a été supprimé — il pingait l'ancien backend Render, sans rapport avec un déploiement).
+**Fait** (commit `119799f` + `d612375`) : workflow GitHub Actions `.github/workflows/deploy-backend.yml`, déclenché au push sur `master` touchant `backend/**` (ou manuellement via `workflow_dispatch`). Se connecte en SSH avec une clé dédiée (secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`), fait `git pull` → `npm install --omit=dev` → `pm2 restart groceryList-backend` (process pm2 confirmé sur le VPS, cwd `/var/www/groceryListRevival/backend`), puis vérifie `/healthz`. Testé avec succès via déclenchement manuel.
 
-Risque déjà rencontré : une variable d'env oubliée côté VPS après un déploiement (ex. `FRONTEND_URL` manquante lors de la mise en place du reset password) passe inaperçue jusqu'au test en prod.
+**Scope volontairement limité au backend** — le frontend (hébergement Apache mutualisé séparé, `guillaumejarry.com/groceryListRevival/`) reste en déploiement manuel.
 
-**Scope volontairement limité au backend** — le frontend (hébergement Apache mutualisé séparé, `guillaumejarry.com/groceryListRevival/`) reste en déploiement manuel, hors de ce chantier.
-
-**Ce que ça implique :**
-- Vérifier sur le VPS (SSH) quel process manager tourne actuellement (pm2 ou systemd) — non documenté dans le repo, à formaliser avant d'écrire le script de restart.
-- Générer une clé SSH dédiée au déploiement (différente de celle utilisée manuellement), l'ajouter aux `authorized_keys` du VPS, et la stocker en GitHub Actions Secret (jamais en clair dans le repo).
-- Workflow GitHub Actions déclenché au push sur `master` : SSH vers le VPS (`appleboy/ssh-action` ou équivalent) → `git pull` → `npm install` → restart du process.
-- Étape de vérification post-déploiement : ping `/healthz` (route déjà existante, `backend/server.js:133`) pour détecter un échec de démarrage.
-- Documenter le process mis en place (`DEPLOY.md` ou section dédiée) — actuellement aucune documentation de déploiement n'existe dans le repo.
+**Reste à faire si besoin** : documenter le process dans un `DEPLOY.md` (non fait, jugé optionnel vu que le workflow est auto-descriptif).
