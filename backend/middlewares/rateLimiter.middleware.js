@@ -37,9 +37,19 @@ const forgotPasswordLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Limiter pour le renvoi de l'email de vérification (éviter le spam d'emails)
+const resendVerificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 5, // Limite à 5 demandes par heure par IP
+  message: "Trop de demandes de renvoi depuis cette IP, veuillez réessayer dans 1 heure",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 module.exports = {
   generalLimiter,
   loginLimiter,
   registerLimiter,
   forgotPasswordLimiter,
+  resendVerificationLimiter,
 };

@@ -24,4 +24,18 @@ const sendPasswordResetEmail = async (email, username, resetUrl) => {
   });
 };
 
-module.exports = { sendPasswordResetEmail };
+const sendVerificationEmail = async (email, username, verifyUrl) => {
+  await transporter.sendMail({
+    from: `"Grocery List - Listes et listes de courses" <${process.env.MAIL_FROM}>`,
+    to: email,
+    subject: "Confirmez votre adresse email",
+    html: `
+      <p>Bonjour ${username},</p>
+      <p>Merci de confirmer votre adresse email pour activer votre compte sur l'application de listes de Guillaume.</p>
+      <p><a href="${verifyUrl}">Cliquez ici pour confirmer votre email</a></p>
+      <p>Ce lien expire dans 24 heures.</p>
+    `,
+  });
+};
+
+module.exports = { sendPasswordResetEmail, sendVerificationEmail };

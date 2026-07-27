@@ -20,6 +20,7 @@ import Login from "./components/login.component";
 import Register from "./components/register.component";
 import ForgotPassword from "./components/forgot-password.component";
 import ResetPassword from "./components/reset-password.component";
+import VerifyEmail from "./components/verify-email.component";
 
 // Routes publiques qui ne nécessitent pas d'attendre verify()
 const PUBLIC_ROUTES = [
@@ -29,6 +30,7 @@ const PUBLIC_ROUTES = [
   "/list-testing",
   "/forgot-password",
   "/reset-password",
+  "/verify-email",
 ];
 
 export default function App() {
@@ -57,6 +59,7 @@ export default function App() {
         <Route path={"/register"} element={<Register />} />
         <Route path={"/forgot-password"} element={<ForgotPassword />} />
         <Route path={"/reset-password"} element={<ResetPassword />} />
+        <Route path={"/verify-email"} element={<VerifyEmail />} />
         <Route path={"/list-testing"} element={<ListTest />} />
         <Route path={"/"} element={<Home />} />
 

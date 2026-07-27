@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const User = require("../models/user.model");
 const { validatePassword } = require("../utils/passwordValidator");
-const { sendPasswordResetEmail } = require("../services/email.service");
+const { sendPasswordResetEmail, sendVerificationEmail } = require("../services/email.service");
 
 const maxAge = 30 * 24 * 60 * 60; // 30 jours
 
@@ -57,7 +57,23 @@ exports.register = async (req, res) => {
       });
     }
 
-    const user = await User.create({ username, email, password });
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const hashedVerificationToken = crypto
+      .createHash("sha256")
+      .update(verificationToken)
+      .digest("hex");
+
+    const user = await User.create({
+      username,
+      email: email.toLowerCase().trim(),
+      password,
+      emailVerificationToken: hashedVerificationToken,
+      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 heures
+    });
+
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+    await sendVerificationEmail(user.email, user.username, verifyUrl);
+
     // Return format expected by frontend
     return res.status(201).json({ user: user._id, created: true });
   } catch (err) {
@@ -77,6 +93,14 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await User.login(email, password);
+
+    if (!user.isVerified) {
+      return res.status(403).json({
+        errors: { verification: "Compte non vérifié, vérifiez votre boîte mail" },
+        logged: false,
+        unverified: true,
+      });
+    }
 
     const token = createToken(user._id);
 
@@ -188,5 +212,59 @@ exports.verify = async (req, res) => {
     });
   } catch {
     return res.status(200).json({ authenticated: false });
+  }
+};
+
+exports.verifyEmailToken = async (req, res) => {
+  try {
+    const { token } = req.query;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ verified: false, message: "Lien invalide ou expiré" });
+    }
+
+    user.isVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({ verified: true });
+  } catch (err) {
+    console.error("Erreur verifyEmailToken:", err);
+    return res.status(400).json({ verified: false, message: "Une erreur est survenue" });
+  }
+};
+
+exports.resendVerification = async (req, res) => {
+  const genericResponse = {
+    message: "Si un compte existe et n'est pas vérifié, un email a été envoyé.",
+  };
+
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (user && !user.isVerified) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+      user.emailVerificationToken = hashedToken;
+      user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 heures
+      await user.save();
+
+      const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+      await sendVerificationEmail(user.email, user.username, verifyUrl);
+    }
+
+    return res.status(200).json(genericResponse);
+  } catch (err) {
+    console.error("Erreur resendVerification:", err);
+    return res.status(200).json(genericResponse);
   }
 };

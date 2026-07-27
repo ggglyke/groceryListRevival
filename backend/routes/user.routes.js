@@ -3,6 +3,7 @@ const {
   loginLimiter,
   registerLimiter,
   forgotPasswordLimiter,
+  resendVerificationLimiter,
 } = require("../middlewares/rateLimiter.middleware.js");
 const validate = require("../middlewares/validate.middleware.js");
 const {
@@ -10,6 +11,8 @@ const {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
 } = require("../validators/user.validator.js");
 
 module.exports = (app) => {
@@ -36,6 +39,12 @@ module.exports = (app) => {
 
   // Réinitialisation du mot de passe (avec validation)
   router.post("/reset-password", validate(resetPasswordSchema), users.resetPassword);
+
+  // Vérification de l'email (token en query, envoyé par email à l'inscription)
+  router.get("/verify-email", validate(verifyEmailSchema), users.verifyEmailToken);
+
+  // Renvoi de l'email de vérification (avec rate limiting + validation)
+  router.post("/resend-verification", resendVerificationLimiter, validate(resendVerificationSchema), users.resendVerification);
 
   app.use("/api/users", router);
 };

@@ -15,6 +15,8 @@ export default function Login() {
 
   const [values, setValues] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
+  const [resending, setResending] = useState(false);
 
   const query = useMemo(
     () => new URLSearchParams(location.search),
@@ -45,6 +47,7 @@ export default function Login() {
       return generateError("Email et mot de passe requis");
     }
     setSubmitting(true);
+    setUnverifiedEmail(null);
     try {
       const { data } = await UserDataService.login(values);
       if (data?.logged) {
@@ -53,6 +56,11 @@ export default function Login() {
         setTimeout(() => {
           verify?.();
         }, 0);
+      } else if (data?.unverified) {
+        setUnverifiedEmail(values.email);
+        generateError(
+          data?.errors?.verification || "Compte non vérifié, vérifiez votre boîte mail"
+        );
       } else if (data?.errors) {
         const { email, password } = data.errors;
         if (email) generateError(email);
@@ -61,7 +69,16 @@ export default function Login() {
         generateError("Identifiants invalides");
       }
     } catch (err) {
-      if (err?.response?.status === 401 && err?.response?.data?.errors) {
+      if (err?.response?.data?.unverified) {
+        setUnverifiedEmail(values.email);
+        generateError(
+          err.response.data?.errors?.verification ||
+            "Compte non vérifié, vérifiez votre boîte mail"
+        );
+      } else if (
+        (err?.response?.status === 401 || err?.response?.status === 403) &&
+        err?.response?.data?.errors
+      ) {
         const { email, password } = err.response.data.errors;
         if (email) generateError(email);
         else if (password) generateError(password);
@@ -72,6 +89,23 @@ export default function Login() {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    try {
+      await UserDataService.resendVerification({ email: unverifiedEmail });
+      toast.success(
+        "Si un compte existe et n'est pas vérifié, un email a été envoyé.",
+        { position: "top-right" }
+      );
+    } catch (err) {
+      console.error(err);
+      generateError("Erreur réseau, réessayez");
+    } finally {
+      setResending(false);
     }
   };
   return (
@@ -117,6 +151,17 @@ export default function Login() {
               </Button>
             </div>
           </Form>
+          {unverifiedEmail && (
+            <div className="d-grid gap-2 mt-2">
+              <Button
+                variant="outline-secondary"
+                onClick={handleResendVerification}
+                disabled={resending}
+              >
+                Renvoyer l'email de vérification
+              </Button>
+            </div>
+          )}
           <Form.Text muted>
             <p className="text-center">
               <Link to="/forgot-password">Mot de passe oublié ?</Link>

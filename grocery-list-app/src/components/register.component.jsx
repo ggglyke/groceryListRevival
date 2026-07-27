@@ -24,6 +24,7 @@ export default function Register() {
     email: "",
     password: "",
   });
+  const [registered, setRegistered] = useState(false);
 
   // Redirige vers /lists si l'utilisateur est déjà connecté
   useEffect(() => {
@@ -117,7 +118,7 @@ export default function Register() {
       if (dataDefaultAisles.errors) {
         handleErrors(dataDefaultAisles.errors);
       } else {
-        navigate("/login/?accountCreated=true");
+        setRegistered(true);
       }
     } catch (err) {
       console.error("handledefaultAislesData : ", err);
@@ -212,63 +213,70 @@ export default function Register() {
             <img src="./logo192.png" alt="" />
           </div>
           <h2 className="mt-4 mb-5 text-center">Créer un compte</h2>
-          <Form onSubmit={(e) => handleSubmit(e)}>
-            <Form.Group controlId="username" className="mb-3">
-              <Form.Label>
-                Nom d'utilisateur, pseudo, prénom...{" "}
-                <span className="text-danger">*</span>
-              </Form.Label>
-              <Form.Control
-                required
-                type="text"
-                placeholder="Ex: tintin72"
-                name="username"
-                onChange={(e) =>
-                  setUserData({ ...userData, [e.target.name]: e.target.value })
-                }
-              />
-            </Form.Group>
-            <Form.Group controlId="email" className="mb-3">
-              <Form.Label>
-                Adresse email <span className="text-danger">*</span>
-              </Form.Label>
-              <Form.Control
-                required
-                type="email"
-                placeholder="Ex: philippe@grues-passion.fr"
-                name="email"
-                onChange={(e) =>
-                  setUserData({ ...userData, [e.target.name]: e.target.value })
-                }
-              />
-            </Form.Group>
-            <Form.Group controlId="password">
-              <Form.Label>
-                Mot de passe <span className="text-danger">*</span>
-              </Form.Label>
-              <PasswordInput
-                required
-                controlId="password"
-                placeholder="Mot de passe"
-                name="password"
-                value={userData.password}
-                onChange={(e) =>
-                  setUserData({ ...userData, [e.target.name]: e.target.value })
-                }
-              />
-              <PasswordRules password={userData.password} />
-            </Form.Group>
-            <div className="d-grid gap-2">
-              <Button variant="primary" type="submit" className="my-4">
-                Créer un compte
-              </Button>
-            </div>
-            <Form.Text muted>
-              <p className="text-center mt-2">
-                Déjà un compte ? <Link to="/login">Connectez-vous.</Link>
-              </p>
-            </Form.Text>
-          </Form>
+          {registered ? (
+            <p className="text-center">
+              Compte créé ! Vérifiez votre boîte mail pour activer votre
+              compte, puis <Link to="/login">connectez-vous</Link>.
+            </p>
+          ) : (
+            <Form onSubmit={(e) => handleSubmit(e)}>
+              <Form.Group controlId="username" className="mb-3">
+                <Form.Label>
+                  Nom d'utilisateur, pseudo, prénom...{" "}
+                  <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  required
+                  type="text"
+                  placeholder="Ex: tintin72"
+                  name="username"
+                  onChange={(e) =>
+                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="email" className="mb-3">
+                <Form.Label>
+                  Adresse email <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  required
+                  type="email"
+                  placeholder="Ex: philippe@grues-passion.fr"
+                  name="email"
+                  onChange={(e) =>
+                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                  }
+                />
+              </Form.Group>
+              <Form.Group controlId="password">
+                <Form.Label>
+                  Mot de passe <span className="text-danger">*</span>
+                </Form.Label>
+                <PasswordInput
+                  required
+                  controlId="password"
+                  placeholder="Mot de passe"
+                  name="password"
+                  value={userData.password}
+                  onChange={(e) =>
+                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                  }
+                />
+                <PasswordRules password={userData.password} />
+              </Form.Group>
+              <div className="d-grid gap-2">
+                <Button variant="primary" type="submit" className="my-4">
+                  Créer un compte
+                </Button>
+              </div>
+              <Form.Text muted>
+                <p className="text-center mt-2">
+                  Déjà un compte ? <Link to="/login">Connectez-vous.</Link>
+                </p>
+              </Form.Text>
+            </Form>
+          )}
         </div>
       </div>
       <ToastContainer />

@@ -88,9 +88,39 @@ const resetPasswordSchema = Joi.object({
   query: Joi.object({}),
 });
 
+// Schéma pour la vérification d'email (token en query string)
+const verifyEmailSchema = Joi.object({
+  body: Joi.object({}),
+  params: Joi.object({}),
+  query: Joi.object({
+    token: Joi.string()
+      .required()
+      .messages({
+        "any.required": "Le token est requis",
+      }),
+  }).required(),
+});
+
+// Schéma pour le renvoi de l'email de vérification
+const resendVerificationSchema = Joi.object({
+  body: Joi.object({
+    email: Joi.string()
+      .email()
+      .required()
+      .messages({
+        "string.email": "L'email doit être valide",
+        "any.required": "L'email est requis",
+      }),
+  }).required(),
+  params: Joi.object({}),
+  query: Joi.object({}),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
 };
