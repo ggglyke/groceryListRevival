@@ -54,7 +54,7 @@ export default function Register() {
     try {
       const { data } = await UserDataService.register(
         { ...userData },
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (data?.errors) {
         handleErrors(data.errors);
@@ -78,11 +78,15 @@ export default function Register() {
           <div className="img-container">
             <img src="./logo192.png" alt="" />
           </div>
-          <h2 className="mt-4 mb-5 text-center">Créer un compte</h2>
+          <h2 className="mt-4 mb-5 text-center">
+            Compte créé ! Vérifiez vos emails
+          </h2>
           {registered ? (
             <p className="text-center">
-              Compte créé ! Vérifiez votre boîte mail pour activer votre
-              compte, puis <Link to="/login">connectez-vous</Link>.
+              Vérifiez votre boîte mail puis cliquez sur le lien pour activer
+              votre compte.
+              <br />
+              Puis <Link to="/login">connectez-vous</Link>.
             </p>
           ) : (
             <Form onSubmit={(e) => handleSubmit(e)}>
@@ -97,7 +101,10 @@ export default function Register() {
                   placeholder="Ex: tintin72"
                   name="username"
                   onChange={(e) =>
-                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                    setUserData({
+                      ...userData,
+                      [e.target.name]: e.target.value,
+                    })
                   }
                 />
               </Form.Group>
@@ -111,7 +118,10 @@ export default function Register() {
                   placeholder="Ex: philippe@grues-passion.fr"
                   name="email"
                   onChange={(e) =>
-                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                    setUserData({
+                      ...userData,
+                      [e.target.name]: e.target.value,
+                    })
                   }
                 />
               </Form.Group>
@@ -126,7 +136,10 @@ export default function Register() {
                   name="password"
                   value={userData.password}
                   onChange={(e) =>
-                    setUserData({ ...userData, [e.target.name]: e.target.value })
+                    setUserData({
+                      ...userData,
+                      [e.target.name]: e.target.value,
+                    })
                   }
                 />
                 <PasswordRules password={userData.password} />

@@ -24,6 +24,11 @@ body {
     width: 54px;
     object-fit: cover;
   }
+
+  &--plain {
+    border: none;
+    padding: 0;
+  }
 }
 
 .password-toggle-btn {
