@@ -1,0 +1,31 @@
+name: Deploy Backend to VPS
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/groceryListRevival/backend
+            git pull origin master
+            npm install --omit=dev
+            pm2 restart groceryList-backend
+
+      - name: Health check
+        run: |
+          sleep 5
+          curl -f https://api.guillaumejarry.com/healthz --max-time 15 --retry 3 --retry-delay 5
