@@ -8,6 +8,8 @@ import UserDataService from "../services/user.service";
 import MagasinDataService from "../services/magasin.service";
 import AisleDataService from "../services/aisle.service";
 import PasswordInput from "./reusable/PasswordInput";
+import PasswordRules from "./reusable/PasswordRules";
+import extractPasswordError from "../utils/extractPasswordError";
 
 import rayonsData from "../data/rayons.data";
 
@@ -36,6 +38,11 @@ export default function Register() {
     });
 
   const handleErrors = (errors) => {
+    if (Array.isArray(errors)) {
+      const passwordError = extractPasswordError(errors);
+      if (passwordError) return generateError(passwordError);
+      return generateError(errors[0]?.message || "Une erreur est survenue");
+    }
     const { username, email, password, title, user } = errors;
     if (username) generateError(username);
     else if (email) generateError(email);
@@ -249,6 +256,7 @@ export default function Register() {
                   setUserData({ ...userData, [e.target.name]: e.target.value })
                 }
               />
+              <PasswordRules password={userData.password} />
             </Form.Group>
             <div className="d-grid gap-2">
               <Button variant="primary" type="submit" className="my-4">

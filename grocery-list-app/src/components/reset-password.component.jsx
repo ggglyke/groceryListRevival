@@ -5,6 +5,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import UserDataService from "../services/user.service";
 import PasswordInput from "./reusable/PasswordInput";
+import PasswordRules from "./reusable/PasswordRules";
+import extractPasswordError from "../utils/extractPasswordError";
 import "../scss/login-register.scss";
 
 export default function ResetPassword() {
@@ -44,17 +46,21 @@ export default function ResetPassword() {
           position: "top-right",
         });
         navigate("/login", { replace: true });
-      } else if (data?.errors) {
-        const { password, token: tokenError } = data.errors;
-        if (password) generateError(password);
-        if (tokenError) generateError(tokenError);
       } else {
-        generateError("Une erreur est survenue, réessayez");
+        const passwordError = extractPasswordError(data?.errors);
+        const tokenError = Array.isArray(data?.errors)
+          ? null
+          : data?.errors?.token;
+        if (passwordError) generateError(passwordError);
+        else if (tokenError) generateError(tokenError);
+        else generateError("Une erreur est survenue, réessayez");
       }
     } catch (err) {
-      if (err?.response?.data?.errors) {
-        const { password, token: tokenError } = err.response.data.errors;
-        if (password) generateError(password);
+      const errors = err?.response?.data?.errors;
+      if (errors) {
+        const passwordError = extractPasswordError(errors);
+        const tokenError = Array.isArray(errors) ? null : errors.token;
+        if (passwordError) generateError(passwordError);
         else if (tokenError) generateError(tokenError);
         else generateError("Une erreur est survenue, réessayez");
       } else {
@@ -102,6 +108,7 @@ export default function ResetPassword() {
                   setValues({ ...values, [e.target.name]: e.target.value })
                 }
               />
+              <PasswordRules password={values.password} />
             </Form.Group>
             <div className="d-grid gap-2">
               <Button
