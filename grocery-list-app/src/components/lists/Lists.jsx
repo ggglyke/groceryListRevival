@@ -47,7 +47,7 @@ export default function Lists({ userId }) {
                   />
                 </Dropdown.Item>
                 <Dropdown.Item onClick={() => createList(true)}>
-                  Liste avancée
+                  Liste de courses (rayonnage, magasin)
                   <TooltipComponent
                     config={{ size: ".75em" }}
                     text={[

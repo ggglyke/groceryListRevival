@@ -74,7 +74,7 @@ export default function ListHeader({
           <div>
             <h1 className="mb-0">{list?.title}</h1>
             <span className="text-small text-muted">
-              {hasAisles ? "Liste avancée" : "Liste simple"}
+              {hasAisles ? "Liste de courses" : "Liste simple"}
             </span>
           </div>
           <Dropdown>
@@ -103,7 +103,7 @@ export default function ListHeader({
               <Dropdown.Item onClick={() => changeListType(!hasAisles)}>
                 {hasAisles
                   ? "Passer en liste simple"
-                  : "Passer en liste avancée"}
+                  : "Passer en liste de courses"}
               </Dropdown.Item>
 
               <Dropdown.Divider />

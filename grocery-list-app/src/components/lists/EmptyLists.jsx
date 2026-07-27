@@ -31,7 +31,7 @@ export default function EmptyLists({ createList }) {
                 />
               </Dropdown.Item>
               <Dropdown.Item onClick={() => createList(true)}>
-                Liste avancée
+                Liste de courses (rayonnage, magasin)
                 <TooltipComponent
                   config={{ size: ".75em" }}
                   text={[
