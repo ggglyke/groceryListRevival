@@ -74,7 +74,14 @@ export default function SiteNavbar() {
                 variant="outline-secondary"
                 title={`Salut ${user.username || 'utilisateur'} !`}
               >
-                <Dropdown.Item>Mon compte</Dropdown.Item>
+                <Dropdown.Item onClick={() => navigate("/account")}>
+                  Mon compte
+                </Dropdown.Item>
+                {user.isAdmin && (
+                  <Dropdown.Item onClick={() => navigate("/admin")}>
+                    Admin
+                  </Dropdown.Item>
+                )}
                 <Dropdown.Item onClick={logout}>Déconnexion</Dropdown.Item>
               </DropdownButton>
             )}

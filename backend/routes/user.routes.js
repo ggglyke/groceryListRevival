@@ -1,4 +1,4 @@
-const { checkUser } = require("../middlewares/auth.middleware.js");
+const { checkUser, requireAuth } = require("../middlewares/auth.middleware.js");
 const {
   loginLimiter,
   registerLimiter,
@@ -13,6 +13,7 @@ const {
   resetPasswordSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  changePasswordSchema,
 } = require("../validators/user.validator.js");
 
 module.exports = (app) => {
@@ -45,6 +46,12 @@ module.exports = (app) => {
 
   // Renvoi de l'email de vérification (avec rate limiting + validation)
   router.post("/resend-verification", resendVerificationLimiter, validate(resendVerificationSchema), users.resendVerification);
+
+  // Changement de mot de passe (utilisateur connecté, avec validation)
+  router.post("/change-password", requireAuth, validate(changePasswordSchema), users.changePassword);
+
+  // Suppression de son propre compte (utilisateur connecté)
+  router.delete("/me", requireAuth, users.deleteMyAccount);
 
   app.use("/api/users", router);
 };

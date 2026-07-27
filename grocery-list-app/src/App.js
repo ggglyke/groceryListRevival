@@ -16,11 +16,14 @@ import Magasin from "./components/magasin";
 import ListTest from "./components/listTest.component";
 import Home from "./components/home.component";
 import PrivateRoute from "./components/privateRoute.component";
+import AdminRoute from "./components/adminRoute.component";
 import Login from "./components/login.component";
 import Register from "./components/register.component";
 import ForgotPassword from "./components/forgot-password.component";
 import ResetPassword from "./components/reset-password.component";
 import VerifyEmail from "./components/verify-email.component";
+import Account from "./components/account.component";
+import Admin from "./components/admin.component";
 
 // Routes publiques qui ne nécessitent pas d'attendre verify()
 const PUBLIC_ROUTES = [
@@ -73,6 +76,15 @@ export default function App() {
             path={"/magasin/:id"}
             element={<Magasin userId={user?._id} />}
           />
+          <Route path={"/account"} element={<Account />} />
+        </Route>
+
+        <Route
+          element={
+            <AdminRoute authenticated={authenticated} isAdmin={user?.isAdmin} />
+          }
+        >
+          <Route path={"/admin"} element={<Admin />} />
         </Route>
       </Routes>
 

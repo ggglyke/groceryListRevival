@@ -26,12 +26,13 @@ export function AuthProvider({ children }) {
         localStorage.setItem("auth_cache", JSON.stringify({
           userId: data.userId,
           username: data.username,
+          isAdmin: data.isAdmin,
           ts: Date.now(),
         }));
         setState({
           loading: false,
           authenticated: true,
-          user: { _id: data.userId, username: data.username },
+          user: { _id: data.userId, username: data.username, isAdmin: data.isAdmin },
         });
       } else {
         localStorage.removeItem("auth_cache");
@@ -43,12 +44,12 @@ export function AuthProvider({ children }) {
         // Cold start : utiliser le cache si récent (< 30 jours)
         const cached = localStorage.getItem("auth_cache");
         if (cached) {
-          const { userId, username, ts } = JSON.parse(cached);
+          const { userId, username, isAdmin, ts } = JSON.parse(cached);
           const age = Date.now() - ts;
           const maxCacheAge = 30 * 24 * 60 * 60 * 1000; // 30 jours
           if (age < maxCacheAge) {
             console.log("[Auth] Cache valide, utilisateur considéré connecté");
-            setState({ loading: false, authenticated: true, user: { _id: userId, username } });
+            setState({ loading: false, authenticated: true, user: { _id: userId, username, isAdmin } });
             return;
           }
         }

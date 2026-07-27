@@ -5,10 +5,10 @@ if (!process.env.JWT_SECRET) {
 }
 
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const db = require("../models");
-const User = require("../models/user.model");
-const { magasins: Magasin, rayons: Rayon } = db;
+const { users: User, magasins: Magasin, rayons: Rayon, products: Product, lists: List } = db;
 const defaultRayons = require("../data/defaultRayons.data");
 const { validatePassword } = require("../utils/passwordValidator");
 const { sendPasswordResetEmail, sendVerificationEmail } = require("../services/email.service");
@@ -224,7 +224,8 @@ exports.verify = async (req, res) => {
     return res.status(200).json({
       authenticated: true,
       userId: data.id,
-      username: user.username
+      username: user.username,
+      isAdmin: user.email === process.env.ADMIN_EMAIL,
     });
   } catch {
     return res.status(200).json({ authenticated: false });
@@ -282,5 +283,68 @@ exports.resendVerification = async (req, res) => {
   } catch (err) {
     console.error("Erreur resendVerification:", err);
     return res.status(200).json(genericResponse);
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({
+        errors: { currentPassword: "Utilisateur introuvable" },
+        changed: false,
+      });
+    }
+
+    const auth = await bcrypt.compare(currentPassword, user.password);
+    if (!auth) {
+      return res.status(400).json({
+        errors: { currentPassword: "Mot de passe actuel incorrect" },
+        changed: false,
+      });
+    }
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({
+        errors: { newPassword: passwordValidation.errors.join(", ") },
+        changed: false,
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({ changed: true });
+  } catch (err) {
+    console.error("Erreur changePassword:", err);
+    return res.status(400).json({
+      errors: { currentPassword: "Une erreur est survenue, veuillez réessayer" },
+      changed: false,
+    });
+  }
+};
+
+// Supprime le compte de l'utilisateur connecté ainsi que toutes ses données
+// (listes, magasins, produits, rayons — tous rattachés via un champ `user`)
+exports.deleteMyAccount = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    await Promise.all([
+      List.deleteMany({ user: userId }),
+      Magasin.deleteMany({ user: userId }),
+      Product.deleteMany({ user: userId }),
+      Rayon.deleteMany({ user: userId }),
+    ]);
+    await User.deleteOne({ _id: userId });
+
+    res.clearCookie("jwt");
+    return res.status(200).json({ deleted: true });
+  } catch (err) {
+    console.error("Erreur deleteMyAccount:", err);
+    return res.status(400).json({ deleted: false, message: "Une erreur est survenue" });
   }
 };

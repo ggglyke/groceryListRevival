@@ -58,19 +58,23 @@ Autre lacune actuelle : le magasin créé à l'inscription n'a pas son `rayonsOr
 - Nouveau composant `grocery-list-app/src/components/reusable/PasswordRules.jsx` : checklist en temps réel des règles de mot de passe (8 caractères, majuscule, minuscule, chiffre, caractère spécial), état neutre tant que le champ est vide, rouge/vert dynamique ensuite. Affiché sur les pages register et reset-password (sous le champ mot de passe, avant le bouton de validation).
 - `backend/utils/passwordValidator.js` : la règle de caractère spécial est passée d'une liste blanche de symboles (qui excluait des caractères valides comme `§` ou `£`) à `[^a-zA-Z0-9]` (tout caractère non alphanumérique accepté), plus simple et exhaustif.
 
-## 7. Page "Mon compte"
+## 7. Page "Mon compte" ✅ Traité
 
-**Contexte actuel** : le menu déroulant utilisateur (`grocery-list-app/src/components/reusable/navbar.component.js:77`) contient déjà un item "Mon compte", mais sans `onClick`/`href` — c'est un lien mort, aucune route ni page n'existe derrière.
+**Fait** : nouvelle page `/account` (`account.component.jsx`), protégée dans le groupe `PrivateRoute`. Changement de mot de passe (`POST /api/users/change-password`, ancien + nouveau, réutilise `validatePassword`/`PasswordRules`/`PasswordInput`). Suppression de compte (`DELETE /api/users/me`) avec confirmation via `AlertModal` — cascade complète (listes, magasins, produits, rayons), invalide le cookie JWT et le cache local à la suppression. Lien "Mon compte" du menu déroulant maintenant fonctionnel.
 
-**Ce que ça implique, a minima :**
-- Nouvelle route `/account` (ou `/my-account`), protégée (dans le groupe `PrivateRoute` de `App.js`, pas publique).
-- Nouveau composant `account.component.jsx`, nouvelle route backend `GET /api/users/me` (ou réutiliser `req.userId` du middleware `requireAuth` existant) pour récupérer les infos du compte courant.
-- **Changement de mot de passe** (utilisateur déjà connecté, différent du flux "mot de passe oublié") : nouvelle route `POST /api/users/change-password` (ancien mot de passe + nouveau, `requireAuth`), réutilise `validatePassword` (`backend/utils/passwordValidator.js`) et l'affichage `PasswordRules`/`PasswordInput` déjà existants (mêmes composants que register/reset-password, cf. point 6).
-- **Suppression de compte** : nouvelle route `DELETE /api/users/me` (`requireAuth`), avec confirmation forte côté frontend (ex. retaper le mot de passe ou taper "SUPPRIMER"). Décision à trancher : suppression en cascade des données liées (listes, produits, rayons, magasins — tous ont un champ `user`, cf. point 4) ou conservation/anonymisation. Pense à invalider le cookie JWT et le cache `localStorage` (`AuthContext.jsx`) après suppression.
-
-**Suggestions de fonctionnalités additionnelles pour cette page** (à trancher selon besoin) :
+**Suggestions de fonctionnalités additionnelles pour cette page** (non faites, à trancher selon besoin) :
 - Modifier le nom d'utilisateur (`username`) — actuellement non modifiable après inscription.
 - Modifier l'adresse email — implique de repasser par une vérification (réutilise le flux du point 1) avant de valider le changement, pour éviter qu'un compte se retrouve avec un email non vérifié.
 - Voir la date de création du compte (`createdAt`, déjà stocké via `timestamps: true` sur le modèle `User`, juste à afficher).
 - Exporter ses données (listes, produits) en JSON — utile avant une suppression de compte, ou simple demande de portabilité.
 - Résumé d'activité (nombre de listes, produits ajoutés) — cosmétique, faible priorité.
+
+**Note d'architecture (vérifiée, pas un bug)** : un rayon appartient à un `user` (`Rayon.user`), pas à un magasin — `Magasin.rayonsOrder` référence juste des IDs de rayons pour exprimer leur ordre d'affichage dans ce magasin précis, sans les posséder. C'est le bon modèle (les rayons sont un concept générique par utilisateur, réutilisé entre plusieurs magasins ; seul l'ordre change d'un magasin à l'autre). Donc supprimer un magasin (`magasin.controller.js:128-153`) ne supprime pas les rayons, et **ce n'est pas un bug de cascade manquant** — c'est le comportement voulu. Vérifié suite à la découverte d'orphelins en base début 2024 (probablement dus à une inscription échouée avant le fix du point 1, pas à ce mécanisme).
+
+## 8. Page "Admin" (compte de Guillaume uniquement) ✅ Traité
+
+**Fait** : `ADMIN_EMAIL` en variable d'env, middleware `requireAdmin` (`auth.middleware.js`, après `requireAuth`), routes `GET /api/admin/users` (liste enrichie de compteurs listes/magasins/produits/rayons par compte) et `DELETE /api/admin/users/:id` (cascade complète, bloque l'auto-suppression via cette route — passe par `/users/me`). Frontend : page `/admin` (`admin.component.jsx`, table + suppression avec `AlertModal` détaillant les données qui seront supprimées), protégée par un nouveau `AdminRoute` (redirige si non-admin), item "Admin" visible conditionnellement dans le menu. Le flag `isAdmin` est calculé côté backend et exposé via `/verify` (pas d'email exposé au frontend).
+
+Bug latent corrigé au passage : `backend/models/user.model.js` exportait directement le modèle compilé au lieu d'une factory `(mongoose) => {...}` comme les autres modèles — `db.users` était silencieusement cassé (jamais utilisé auparavant, les contrôleurs important `user.model.js` en direct). Corrigé pour permettre la cascade admin.
+
+Testé de bout en bout (backend) : changement de mot de passe (bon/mauvais ancien mdp), suppression de compte avec vérification cascade en DB (0 orphelin), 403 pour non-admin et pour auto-suppression via la route admin.

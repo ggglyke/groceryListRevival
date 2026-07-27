@@ -8,6 +8,8 @@ const forgotPassword = (payload) => http.post("/users/forgot-password", payload)
 const resetPassword = (payload) => http.post("/users/reset-password", payload);
 const verifyEmail = (token) => http.get(`/users/verify-email?token=${token}`);
 const resendVerification = (payload) => http.post("/users/resend-verification", payload);
+const changePassword = (payload) => http.post("/users/change-password", payload);
+const deleteMyAccount = () => http.delete("/users/me");
 
 export default {
   login,
@@ -18,4 +20,6 @@ export default {
   resetPassword,
   verifyEmail,
   resendVerification,
+  changePassword,
+  deleteMyAccount,
 };

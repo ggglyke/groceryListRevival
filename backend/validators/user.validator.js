@@ -116,6 +116,26 @@ const resendVerificationSchema = Joi.object({
   query: Joi.object({}),
 });
 
+// Schéma pour le changement de mot de passe (utilisateur connecté)
+const changePasswordSchema = Joi.object({
+  body: Joi.object({
+    currentPassword: Joi.string()
+      .required()
+      .messages({
+        "any.required": "Le mot de passe actuel est requis",
+      }),
+    newPassword: Joi.string()
+      .min(8)
+      .required()
+      .messages({
+        "string.min": "Le nouveau mot de passe doit contenir au moins 8 caractères",
+        "any.required": "Le nouveau mot de passe est requis",
+      }),
+  }).required(),
+  params: Joi.object({}),
+  query: Joi.object({}),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -123,4 +143,5 @@ module.exports = {
   resetPasswordSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  changePasswordSchema,
 };

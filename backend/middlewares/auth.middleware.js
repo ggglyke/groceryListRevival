@@ -1,4 +1,5 @@
-const User = require("../models/user.model");
+const db = require("../models");
+const User = db.users;
 const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -52,6 +53,21 @@ module.exports.requireAuth = (req, res, next) => {
       message: "Non authentifié - Token invalide ou expiré",
       authenticated: false,
     });
+  }
+};
+
+/**
+ * Middleware pour restreindre l'accès au compte admin (à enchaîner après requireAuth)
+ */
+module.exports.requireAdmin = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user || user.email !== process.env.ADMIN_EMAIL) {
+      return res.status(403).json({ message: "Accès refusé" });
+    }
+    next();
+  } catch (err) {
+    return res.status(403).json({ message: "Accès refusé" });
   }
 };
 
