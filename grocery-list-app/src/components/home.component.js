@@ -53,7 +53,13 @@ export default function Home() {
             L'application qui organise vos listes de courses par rayon, pour ne
             plus jamais faire demi-tour dans les allées.
           </p>
-          {!authenticated && (
+          {authenticated ? (
+            <div className="d-flex justify-content-center gap-2 mt-4">
+              <Link to="/lists">
+                <Button variant="primary">Voir mes listes</Button>
+              </Link>
+            </div>
+          ) : (
             <div className="d-flex justify-content-center gap-2 mt-4">
               <Link to="/register">
                 <Button variant="primary">Créer un compte</Button>

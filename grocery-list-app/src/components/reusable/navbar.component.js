@@ -57,10 +57,18 @@ export default function SiteNavbar() {
           className="d-lg-flex justify-content-between"
         >
           <Nav>
-            <Nav.Link href="./lists">Listes</Nav.Link>
-            <Nav.Link href="./products">Produits</Nav.Link>
-            <Nav.Link href="./aisles">Rayons</Nav.Link>
-            <Nav.Link href="./magasins">Magasins</Nav.Link>
+            <Nav.Link as={Link} to="/lists">
+              Listes
+            </Nav.Link>
+            <Nav.Link as={Link} to="/products">
+              Produits
+            </Nav.Link>
+            <Nav.Link as={Link} to="/aisles">
+              Rayons
+            </Nav.Link>
+            <Nav.Link as={Link} to="/magasins">
+              Magasins
+            </Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2">
             <Badge
