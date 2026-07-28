@@ -109,6 +109,9 @@ export default function VerifyEmail() {
                 <br /> Vous pouvez maintenant{" "}
                 <Link to="/login">vous connecter</Link>.
               </p>
+              <p className="text-center">
+                <Link to="/">Découvrir comment utiliser l'application</Link>
+              </p>
             </>
           )}
 
